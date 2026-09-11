@@ -190,7 +190,7 @@ const collectionHistory = [
    ============================================================ */
 
 const pageTitles = {
-    dashboard: { title: "Smart Waste Management Dashboard",   subtitle: "Monitor bin levels and optimize waste collection" },
+    dashboard: { title: "Dashboard",                           subtitle: "Monitor bin levels and optimize waste collection" },
     bins:      { title: "Bin Management",                     subtitle: "View and manage all waste bins across campus" },
     route:     { title: "Collection Route",                   subtitle: "Today's optimized waste collection route" },
     history:   { title: "Collection History",                 subtitle: "Past collection records and performance metrics" },
