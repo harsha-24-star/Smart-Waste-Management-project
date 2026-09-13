@@ -45,7 +45,8 @@ const firebaseConfig = {
   messagingSenderId: "459528260282",
   appId: "1:459528260282:web:d7161b9ec227621c3c1083"
 };
-
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 let bins = [];
 
 
