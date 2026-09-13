@@ -36,130 +36,27 @@
    - lat / lng   : Placeholder coordinates for the map
    - sensorId    : The ESP32 sensor identifier
    ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDqDKiX2fPyU81XpOCVPTYeFCn7-WkgmoY",
+  authDomain: "smart-waste-management-49d88.firebaseapp.com",
+  databaseURL: "https://smart-waste-management-49d88-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "smart-waste-management-49d88",
+  storageBucket: "smart-waste-management-49d88.firebasestorage.app",
+  messagingSenderId: "459528260282",
+  appId: "1:459528260282:web:d7161b9ec227621c3c1083"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+let bins = [];
+const binsRef = database.ref("bins");
 
-const bins = [
-    {
-        id: "BIN-01",
-        location: "Main Block",
-        fillLevel: 25,
-        lastUpdated: "2 minutes ago",
-        lat: 25,
-        lng: 20,
-        sensorId: "ESP32-001"
-    },
-    {
-        id: "BIN-02",
-        location: "Canteen",
-        fillLevel: 90,
-        lastUpdated: "1 minute ago",
-        lat: 35,
-        lng: 55,
-        sensorId: "ESP32-002"
-    },
-    {
-        id: "BIN-03",
-        location: "Library",
-        fillLevel: 60,
-        lastUpdated: "3 minutes ago",
-        lat: 55,
-        lng: 30,
-        sensorId: "ESP32-003"
-    },
-    {
-        id: "BIN-04",
-        location: "Hostel A",
-        fillLevel: 45,
-        lastUpdated: "5 minutes ago",
-        lat: 70,
-        lng: 15,
-        sensorId: "ESP32-004"
-    },
-    {
-        id: "BIN-05",
-        location: "Parking Area",
-        fillLevel: 82,
-        lastUpdated: "1 minute ago",
-        lat: 30,
-        lng: 80,
-        sensorId: "ESP32-005"
-    },
-    {
-        id: "BIN-06",
-        location: "Hostel B",
-        fillLevel: 95,
-        lastUpdated: "30 seconds ago",
-        lat: 75,
-        lng: 75,
-        sensorId: "ESP32-006"
-    },
-    {
-        id: "BIN-07",
-        location: "Sports Ground",
-        fillLevel: 30,
-        lastUpdated: "4 minutes ago",
-        lat: 85,
-        lng: 45,
-        sensorId: "ESP32-007"
-    },
-    {
-        id: "BIN-08",
-        location: "Auditorium",
-        fillLevel: 72,
-        lastUpdated: "2 minutes ago",
-        lat: 50,
-        lng: 60,
-        sensorId: "ESP32-008"
-    },
-    {
-        id: "BIN-09",
-        location: "Admin Office",
-        fillLevel: 15,
-        lastUpdated: "6 minutes ago",
-        lat: 20,
-        lng: 42,
-        sensorId: "ESP32-009"
-    },
-    {
-        id: "BIN-10",
-        location: "Workshop",
-        fillLevel: 55,
-        lastUpdated: "3 minutes ago",
-        lat: 60,
-        lng: 88,
-        sensorId: "ESP32-010"
-    },
-    {
-        id: "BIN-11",
-        location: "Gate Entrance",
-        fillLevel: 40,
-        lastUpdated: "7 minutes ago",
-        lat: 10,
-        lng: 50,
-        sensorId: "ESP32-011"
-    },
-    {
-        id: "BIN-12",
-        location: "Seminar Hall",
-        fillLevel: 68,
-        lastUpdated: "4 minutes ago",
-        lat: 45,
-        lng: 35,
-        sensorId: "ESP32-012"
-    }
-    // ─── FUTURE: Firebase Integration ───
-    // When Firebase is connected, remove this array and instead
-    // listen for real-time updates:
-    //
-    // import { getDatabase, ref, onValue } from "firebase/database";
-    // const db = getDatabase();
-    // const binsRef = ref(db, "bins");
-    // onValue(binsRef, (snapshot) => {
-    //     const data = snapshot.val();
-    //     bins = Object.values(data);
-    //     renderAll();
-    // });
-];
+binsRef.on("value", (snapshot) => {
+    const data = snapshot.val() || {};
 
+    bins = Object.values(data);
+
+    renderAll();
+});
 
 /* ============================================================
    1b. MOCK COLLECTION HISTORY DATA
