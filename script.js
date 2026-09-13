@@ -190,12 +190,12 @@ const collectionHistory = [
    ============================================================ */
 
 const pageTitles = {
-    dashboard: { title: "Dashboard",                           subtitle: "Monitor bin levels and optimize waste collection" },
-    bins:      { title: "Bin Management",                     subtitle: "View and manage all waste bins across campus" },
-    route:     { title: "Collection Route",                   subtitle: "Today's optimized waste collection route" },
-    history:   { title: "Collection History",                 subtitle: "Past collection records and performance metrics" },
-    analytics: { title: "Analytics & Insights",               subtitle: "Data visualization and AI predictions" },
-    settings:  { title: "Settings",                           subtitle: "System configuration and preferences" },
+    dashboard: { title: "Operations Command Center",     subtitle: "Real-time ultrasonic telemetry, IoT fleet monitoring, and dynamic collection dispatch" },
+    bins:      { title: "Smart Bins & Hardware Nodes",   subtitle: "Live ultrasonic sensor telemetry, fill diagnostics, and hardware health" },
+    route:     { title: "Intelligent Route Dispatch",     subtitle: "Autonomous priority sequencing and dynamic logistics optimization" },
+    history:   { title: "Collection Audit Log",           subtitle: "Historical collection records, response telemetry, and fleet performance" },
+    analytics: { title: "Analytics & AI Forecasting",     subtitle: "Campus waste velocity metrics, fill distribution, and neural predictions" },
+    settings:  { title: "System Architecture & Config",   subtitle: "Sensor thresholds, notification rules, and Firebase cloud integration" },
 };
 
 
@@ -287,29 +287,48 @@ function updateSummary() {
  */
 function buildBinCardsHTML(binsToRender) {
     if (binsToRender.length === 0) {
-        return '<div class="no-results">No bins match your search or filter.</div>';
+        return '<div class="no-results"><i class="bx bx-search-alt"></i><p>No bins match your current filter or search query.</p></div>';
     }
 
     return binsToRender.map(bin => {
         const status = getBinStatus(bin.fillLevel);
         const binNumber = bin.id.replace("BIN-", "");
+        // Calculated ultrasonic distance estimate: 100cm max bin depth
+        const approxDistanceCm = Math.round(100 - (bin.fillLevel * 0.9));
 
         return `
             <div class="bin-card status-${status.className}" 
                  onclick="showBinDetails('${bin.id}')"
-                 title="Click for details">
-                <div class="bin-card-header">
-                    <h3>Bin ${binNumber}</h3>
-                    <span class="status-badge ${status.className}">${status.label}</span>
+                 title="Inspect device telemetry for ${bin.id}">
+                <div class="bin-card-top">
+                    <div class="bin-id-block">
+                        <span class="bin-sensor-tag"><i class='bx bx-chip'></i> ${bin.sensorId}</span>
+                        <h3>Bin ${binNumber}</h3>
+                    </div>
+                    <span class="status-badge ${status.className}">
+                        <span class="badge-dot"></span>
+                        ${status.label}
+                    </span>
                 </div>
-                <p class="location"><i class='bx bx-map'></i> ${bin.location}</p>
-                <div class="fill-bar">
-                    <div class="fill-progress ${status.className}" 
-                         style="width: ${bin.fillLevel}%"></div>
+                <div class="bin-card-location">
+                    <i class='bx bx-map-pin'></i>
+                    <span>${bin.location}</span>
                 </div>
-                <div class="fill-text">
-                    <span>Fill Level</span>
-                    <span class="percent">${bin.fillLevel}%</span>
+                <div class="bin-card-meter">
+                    <div class="fill-bar">
+                        <div class="fill-progress ${status.className}" 
+                             style="width: ${bin.fillLevel}%"></div>
+                    </div>
+                    <div class="fill-text">
+                        <span class="fill-lbl"><i class='bx bx-ruler'></i> ~${approxDistanceCm} cm to sensor</span>
+                        <span class="percent">${bin.fillLevel}%</span>
+                    </div>
+                </div>
+                <div class="bin-card-footer">
+                    <span class="bin-ping"><i class='bx bx-radar'></i> ${bin.lastUpdated}</span>
+                    <button class="bin-action-btn" onclick="event.stopPropagation(); showBinDetails('${bin.id}')">
+                        Inspect <i class='bx bx-chevron-right'></i>
+                    </button>
                 </div>
             </div>
         `;
@@ -332,7 +351,7 @@ function renderBinsPage(binsToRender) {
 }
 
 /**
- * renderAlerts — Shows alerts for bins ≥ 80%.
+ * renderAlerts — Action-Oriented Operations Alert Center for bins ≥ 80%.
  */
 function renderAlerts() {
     const container = document.getElementById('alertsContainer');
@@ -342,7 +361,15 @@ function renderAlerts() {
         .sort((a, b) => b.fillLevel - a.fillLevel);
 
     if (alertBins.length === 0) {
-        container.innerHTML = '<div class="no-alerts"><i class="bx bx-check-circle" style="font-size:1.5rem;color:var(--status-normal)"></i><p>All bins are at safe levels. No alerts.</p></div>';
+        container.innerHTML = `
+            <div class="no-alerts">
+                <div class="no-alerts-icon"><i class="bx bx-check-shield"></i></div>
+                <div class="no-alerts-content">
+                    <h4>All Campus Bins Within Safe Operating Thresholds</h4>
+                    <p>No critical fill alerts detected. Telemetry mesh continuous monitoring active.</p>
+                </div>
+            </div>
+        `;
         return;
     }
 
@@ -351,23 +378,41 @@ function renderAlerts() {
         const binNumber = bin.id.replace("BIN-", "");
 
         return `
-            <div class="alert-item ${isCritical ? '' : 'warning'}">
-                <div class="alert-icon">
-                    <i class='bx ${isCritical ? 'bxs-error-circle' : 'bxs-error'}'></i>
+            <div class="alert-item ${isCritical ? 'critical' : 'warning'}" onclick="showBinDetails('${bin.id}')" title="Inspect Bin ${binNumber}">
+                <div class="alert-badge-col">
+                    <span class="alert-status-pill ${isCritical ? 'critical' : 'warning'}">
+                        <span class="alert-pulse-ring"></span>
+                        ${isCritical ? 'CRITICAL DISPATCH' : 'CAPACITY WARNING'}
+                    </span>
+                    <span class="alert-timestamp"><i class='bx bx-time'></i> ${bin.lastUpdated}</span>
                 </div>
-                <div class="alert-text">
-                    <strong>Bin ${binNumber}</strong> (${bin.location}) is 
-                    <strong>${bin.fillLevel}%</strong> full — 
-                    ${isCritical ? 'Immediate collection required!' : 'Needs attention soon.'}
+                <div class="alert-info-col">
+                    <div class="alert-title-row">
+                        <strong>Bin ${binNumber}</strong>
+                        <span class="alert-location-tag"><i class='bx bx-map-pin'></i> ${bin.location}</span>
+                    </div>
+                    <p class="alert-desc">
+                        ${isCritical 
+                            ? 'Fill level has exceeded 90% threshold. Immediate collection dispatch recommended to prevent overflow.' 
+                            : 'Fill level has exceeded 80% threshold. Schedule for next logistics dispatch loop.'}
+                    </p>
                 </div>
-                <span class="alert-time">${bin.lastUpdated}</span>
+                <div class="alert-action-col">
+                    <div class="alert-capacity-metric ${isCritical ? 'critical' : 'warning'}">
+                        <span class="metric-num">${bin.fillLevel}%</span>
+                        <span class="metric-sub">CAPACITY</span>
+                    </div>
+                    <button class="alert-dispatch-btn" onclick="event.stopPropagation(); showBinDetails('${bin.id}')">
+                        Inspect Bin <i class='bx bx-right-arrow-alt'></i>
+                    </button>
+                </div>
             </div>
         `;
     }).join('');
 }
 
 /**
- * buildRouteHTML — Returns HTML for the collection route.
+ * buildRouteHTML — Returns HTML for intelligent visual logistics sequence.
  * Shared by Dashboard and Route page.
  */
 function buildRouteHTML() {
@@ -376,35 +421,60 @@ function buildRouteHTML() {
         .sort((a, b) => b.fillLevel - a.fillLevel);
 
     let html = `
-        <div class="route-step depot">
-            <div class="route-dot"></div>
-            <div class="route-info">
-                <strong>🏢 Depot</strong> — Start collection
+        <div class="route-node-item depot">
+            <div class="route-timeline-marker">
+                <span class="marker-icon"><i class='bx bxs-institution'></i></span>
+                <span class="marker-connector"></span>
+            </div>
+            <div class="route-node-card depot">
+                <div class="route-node-header">
+                    <span class="route-badge depot">ORIGIN</span>
+                    <strong>Central Fleet Depot</strong>
+                </div>
+                <p class="route-node-desc">Collection vehicle dispatch &amp; route departure</p>
             </div>
         </div>
     `;
 
-    routeBins.forEach(bin => {
+    routeBins.forEach((bin, idx) => {
         const status = getBinStatus(bin.fillLevel);
         const binNumber = bin.id.replace("BIN-", "");
         html += `
-            <div class="route-step ${status.className}">
-                <div class="route-dot"></div>
-                <div class="route-info">
-                    <strong>Bin ${binNumber}</strong> — ${bin.location} 
-                    <span class="route-fill" style="color: var(--status-${
-                        status.className === 'nearly-full' ? 'warning' : status.className
-                    })">${bin.fillLevel}%</span>
+            <div class="route-node-item ${status.className}" onclick="showBinDetails('${bin.id}')" title="Inspect Bin ${binNumber}">
+                <div class="route-timeline-marker">
+                    <span class="marker-icon ${status.className}">${idx + 1}</span>
+                    <span class="marker-connector"></span>
+                </div>
+                <div class="route-node-card ${status.className}">
+                    <div class="route-node-header">
+                        <div class="route-bin-ident">
+                            <strong>Bin ${binNumber}</strong>
+                            <span class="route-loc"><i class='bx bx-map-pin'></i> ${bin.location}</span>
+                        </div>
+                        <span class="route-fill-pill ${status.className}">${bin.fillLevel}%</span>
+                    </div>
+                    <div class="route-node-footer">
+                        <span class="route-priority ${status.className}">
+                            <i class='bx bx-flag'></i> Priority ${status.priority}
+                        </span>
+                        <span class="route-inspect-hint">Inspect <i class='bx bx-chevron-right'></i></span>
+                    </div>
                 </div>
             </div>
         `;
     });
 
     html += `
-        <div class="route-step depot">
-            <div class="route-dot"></div>
-            <div class="route-info">
-                <strong>🏢 Depot</strong> — Return to base
+        <div class="route-node-item depot">
+            <div class="route-timeline-marker">
+                <span class="marker-icon"><i class='bx bxs-flag-checkered'></i></span>
+            </div>
+            <div class="route-node-card depot">
+                <div class="route-node-header">
+                    <span class="route-badge depot">DESTINATION</span>
+                    <strong>Central Fleet Depot</strong>
+                </div>
+                <p class="route-node-desc">Waste unload, compaction &amp; fleet return-to-base</p>
             </div>
         </div>
     `;
@@ -436,7 +506,7 @@ function renderRoutePage() {
 }
 
 /**
- * renderMapMarkers — Places bin markers on the CSS campus map.
+ * renderMapMarkersIn — Places bin markers on the CSS campus map.
  * @param {string} mapBgSelector — CSS selector for the map background div.
  */
 function renderMapMarkersIn(mapBgSelector) {
@@ -451,17 +521,21 @@ function renderMapMarkersIn(mapBgSelector) {
         const binNumber = bin.id.replace("BIN-", "");
 
         const marker = document.createElement('div');
-        marker.className = 'map-marker';
+        marker.className = `map-marker status-${status.className}`;
         marker.style.top = `${bin.lat}%`;
         marker.style.left = `${bin.lng}%`;
         marker.title = `${bin.id} — ${bin.location} (${bin.fillLevel}%)`;
         marker.onclick = () => showBinDetails(bin.id);
 
         marker.innerHTML = `
-            <div class="marker-pin ${status.className}">
-                <i class='bx bxs-trash'></i>
+            <div class="marker-beacon ${status.className}">
+                <span class="beacon-wave"></span>
+                <span class="beacon-center"><i class='bx bxs-trash'></i></span>
             </div>
-            <span class="marker-label">Bin ${binNumber}</span>
+            <div class="marker-tag">
+                <span class="tag-id">Bin ${binNumber}</span>
+                <span class="tag-fill ${status.className}">${bin.fillLevel}%</span>
+            </div>
         `;
 
         mapBg.appendChild(marker);
