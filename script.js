@@ -242,8 +242,6 @@ function buildBinCardsHTML(binsToRender) {
     return binsToRender.map(bin => {
         const status = getBinStatus(bin.fillLevel);
         const binNumber = bin.id.replace("BIN-", "");
-        // Calculated ultrasonic distance estimate: 100cm max bin depth
-        const approxDistanceCm = Math.round(100 - (bin.fillLevel * 0.9));
 
         return `
             <div class="bin-card status-${status.className}" 
@@ -269,7 +267,7 @@ function buildBinCardsHTML(binsToRender) {
                              style="width: ${bin.fillLevel}%"></div>
                     </div>
                     <div class="fill-text">
-                        <span class="fill-lbl"><i class='bx bx-ruler'></i> ~${approxDistanceCm} cm to sensor</span>
+                        <span class="fill-lbl">Fill level</span>
                         <span class="percent">${bin.fillLevel}%</span>
                     </div>
                 </div>
