@@ -652,11 +652,15 @@ function initTheme() {
         savedTheme = localStorage.getItem('swm-theme');
     } catch (e) {}
 
-    let isDark = false;
-    if (savedTheme) {
-        isDark = savedTheme === 'dark';
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    // Default to dark theme for modern 2026 AI/IoT command center aesthetic
+    let isDark = true;
+    if (savedTheme === 'light') {
+        isDark = false;
+    } else if (savedTheme === 'dark') {
         isDark = true;
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        // If user explicitly has OS light mode and no saved setting, can still default or respect
+        isDark = false;
     }
 
     if (isDark) {
