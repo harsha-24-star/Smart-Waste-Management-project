@@ -36,6 +36,15 @@
    - lat / lng   : Placeholder coordinates for the map
    - sensorId    : The ESP32 sensor identifier
    ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDqDKiX2fPyU81XpOCVPTYeFCn7-WkgmoY",
+  authDomain: "smart-waste-management-49d88.firebaseapp.com",
+  databaseURL: "https://smart-waste-management-49d88-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "smart-waste-management-49d88",
+  storageBucket: "smart-waste-management-49d88.firebasestorage.app",
+  messagingSenderId: "459528260282",
+  appId: "1:459528260282:web:d7161b9ec227621c3c1083"
+};
 
 let bins = [];
 
