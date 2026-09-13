@@ -48,7 +48,15 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 let bins = [];
+const binsRef = database.ref("bins");
 
+binsRef.on("value", (snapshot) => {
+    const data = snapshot.val() || {};
+
+    bins = Object.values(data);
+
+    renderAll();
+});
 
 /* ============================================================
    1b. MOCK COLLECTION HISTORY DATA
