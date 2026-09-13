@@ -157,9 +157,47 @@ function formatTime(date) {
    ============================================================ */
 
 /**
- * updateSummary — Updates the four summary cards at the top.
+ * animateCounter — Animates numeric values counting up smoothly using ease-out cubic.
+ * @param {string} elemId — Element ID to update
+ * @param {number} targetValue — Target integer
+ * @param {number} duration — Animation duration in ms (~800ms)
+ * @param {boolean} forceFromZero — Whether to force start from 0
  */
-function updateSummary() {
+function animateCounter(elemId, targetValue, duration = 800, forceFromZero = false) {
+    const el = document.getElementById(elemId);
+    if (!el) return;
+
+    const startValue = forceFromZero ? 0 : (parseInt(el.textContent, 10) || 0);
+    if (startValue === targetValue && !forceFromZero) {
+        el.textContent = targetValue;
+        return;
+    }
+
+    const startTime = performance.now();
+
+    function frame(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic: 1 - (1 - progress)^3
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(startValue + (targetValue - startValue) * ease);
+        el.textContent = current;
+
+        if (progress < 1) {
+            requestAnimationFrame(frame);
+        } else {
+            el.textContent = targetValue;
+        }
+    }
+
+    requestAnimationFrame(frame);
+}
+
+/**
+ * updateSummary — Updates the four summary cards at the top with animated counters & progress rings.
+ * @param {boolean} forceFromZero — If true, animates numbers from 0 up to target (~800ms)
+ */
+function updateSummary(forceFromZero = false) {
     let normal = 0, medium = 0, nearlyFull = 0, critical = 0;
 
     bins.forEach(bin => {
@@ -172,10 +210,24 @@ function updateSummary() {
         }
     });
 
-    document.getElementById('totalBins').textContent       = bins.length;
-    document.getElementById('normalBins').textContent      = normal + medium;
-    document.getElementById('nearlyFullBins').textContent   = nearlyFull;
-    document.getElementById('criticalBins').textContent    = critical;
+    const totalCount = bins.length;
+    const normalCount = normal + medium;
+    const warningCount = nearlyFull;
+    const criticalCount = critical;
+
+    animateCounter('totalBins', totalCount, 800, forceFromZero);
+    animateCounter('normalBins', normalCount, 800, forceFromZero);
+    animateCounter('nearlyFullBins', warningCount, 800, forceFromZero);
+    animateCounter('criticalBins', criticalCount, 800, forceFromZero);
+
+    // Update normal radial progress ring dynamically
+    const normalRing = document.getElementById('normalRingProgress');
+    if (normalRing && totalCount > 0) {
+        const pct = normalCount / totalCount;
+        // Total ring circumference = 2 * PI * 14 ~= 88
+        const offset = Math.max(0, Math.round(88 * (1 - pct)));
+        normalRing.style.strokeDashoffset = offset;
+    }
 }
 
 /**
@@ -380,26 +432,32 @@ function buildRouteHTML() {
 }
 
 /**
- * generateRoute — Renders route on the Dashboard page.
+ * generateRoute — Renders route on the Dashboard page if container exists.
  */
 function generateRoute() {
+    const el = document.getElementById('routeContainer');
+    if (!el) return;
     const { html } = buildRouteHTML();
-    document.getElementById('routeContainer').innerHTML = html;
+    el.innerHTML = html;
 }
 
 /**
- * renderRoutePage — Renders route on the dedicated Route page
- * along with route statistics.
+ * renderRoutePage — Renders route on the dedicated Route page if present.
  */
 function renderRoutePage() {
+    const el = document.getElementById('routeContainerPage');
+    if (!el) return;
     const { html, stopCount, criticalCount } = buildRouteHTML();
-    document.getElementById('routeContainerPage').innerHTML = html;
+    el.innerHTML = html;
 
-    // Update route stats
-    document.getElementById('routeStops').textContent = stopCount;
-    document.getElementById('routeCritical').textContent = criticalCount;
-    document.getElementById('routeETA').textContent = `~${stopCount * 5 + 10} min`;
-    document.getElementById('routeDistance').textContent = `~${(stopCount * 0.8 + 1).toFixed(1)} km`;
+    const stopsEl = document.getElementById('routeStops');
+    if (stopsEl) stopsEl.textContent = stopCount;
+    const critEl = document.getElementById('routeCritical');
+    if (critEl) critEl.textContent = criticalCount;
+    const etaEl = document.getElementById('routeETA');
+    if (etaEl) etaEl.textContent = `~${stopCount * 5 + 10} min`;
+    const distEl = document.getElementById('routeDistance');
+    if (distEl) distEl.textContent = `~${(stopCount * 0.8 + 1).toFixed(1)} km`;
 }
 
 /**
@@ -574,12 +632,14 @@ function renderSettingsPage() {
  * updateThemeUI — Synchronizes all theme buttons and icons.
  */
 function updateThemeUI(isDark) {
-    // Header desktop button
+    // Header desktop button (icon-only ghost button)
     const themeBtn = document.getElementById('themeToggleBtn');
     if (themeBtn) {
         themeBtn.innerHTML = isDark
-            ? "<i class='bx bx-sun'></i><span class='theme-text'>Light</span>"
-            : "<i class='bx bx-moon'></i><span class='theme-text'>Dark</span>";
+            ? "<i class='bx bx-sun'></i>"
+            : "<i class='bx bx-moon'></i>";
+        themeBtn.title = isDark ? "Switch to light mode" : "Switch to dark mode";
+        themeBtn.setAttribute('aria-label', isDark ? "Switch to light mode" : "Switch to dark mode");
     }
 
     // Mobile header button
@@ -695,10 +755,6 @@ function navigateToPage(pageName) {
     switch (pageName) {
         case 'bins':
             renderBinsPage(bins);
-            break;
-        case 'route':
-            renderRoutePage();
-            renderMapMarkersPage();
             break;
         case 'history':
             renderHistoryPage();
@@ -840,15 +896,25 @@ function saveThresholds() {
 
 /**
  * renderAll — Master function that re-renders the Dashboard page.
+ * @param {boolean} forceCountAnimation — Whether to animate counters from 0 and re-trigger entrance
  */
-function renderAll() {
+function renderAll(forceCountAnimation = false) {
     updateDateTime();
-    updateSummary();
+    updateSummary(forceCountAnimation);
     renderBins(bins);
     renderAlerts();
     generateRoute();
     renderMapMarkers();
     renderChart();
+
+    if (forceCountAnimation) {
+        // Re-trigger staggered animation on summary cards
+        document.querySelectorAll('.summary-card').forEach(card => {
+            card.style.animation = 'none';
+            void card.offsetHeight; // trigger reflow
+            card.style.animation = '';
+        });
+    }
 
     // If we're currently on another page, re-render that too
     if (currentPage !== 'dashboard') {
@@ -863,8 +929,8 @@ function renderAll() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── Render the dashboard ──
-    renderAll();
+    // ── Render the dashboard (with counting animations) ──
+    renderAll(true);
 
     // ── SEARCH: Dashboard page ──
     document.getElementById('searchInput').addEventListener('input', searchBins);
@@ -896,11 +962,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // const binsRef = ref(db, "bins");
         // get(binsRef).then((snapshot) => { ... });
 
-        renderAll();
+        renderAll(true);
 
         const icon = document.querySelector('.btn-refresh i');
-        icon.style.transform = 'rotate(360deg)';
-        setTimeout(() => { icon.style.transform = 'rotate(0deg)'; }, 500);
+        if (icon) {
+            icon.style.transform = 'rotate(360deg)';
+            setTimeout(() => { icon.style.transform = 'rotate(0deg)'; }, 500);
+        }
     });
 
     // ── MODAL: Close handlers ──

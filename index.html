@@ -53,11 +53,6 @@
                 <span>Smart Bins</span>
                 <span class="nav-indicator"></span>
             </a>
-            <a href="#" class="nav-link" data-page="route">
-                <i class='bx bxs-navigation'></i>
-                <span>Collection Route</span>
-                <span class="nav-indicator"></span>
-            </a>
 
             <!-- Insights Group -->
             <div class="nav-section-label">Intelligence &amp; Logs</div>
@@ -146,9 +141,8 @@
                     <span class="header-info-item"><i class='bx bx-broadcast'></i> Last sync: <strong id="lastUpdate"></strong></span>
                 </div>
                 <div class="header-actions">
-                    <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle dark mode" aria-label="Toggle dark mode">
+                    <button class="theme-toggle-btn ghost-icon-btn" id="themeToggleBtn" title="Toggle dark / light mode" aria-label="Toggle dark / light mode">
                         <i class='bx bx-moon'></i>
-                        <span class="theme-text">Dark</span>
                     </button>
                     <button class="btn-refresh" id="btnRefresh" title="Refresh data">
                         <i class='bx bx-refresh'></i> <span>Sync Telemetry</span>
@@ -191,14 +185,6 @@
                 <div class="workflow-step">
                     <span class="step-num">04</span>
                     <div class="step-meta">
-                        <span class="step-label">OPTIMIZE</span>
-                        <span class="step-sub">Dynamic Routing</span>
-                    </div>
-                </div>
-                <i class='bx bx-chevron-right workflow-sep'></i>
-                <div class="workflow-step">
-                    <span class="step-num">05</span>
-                    <div class="step-meta">
                         <span class="step-label">ACT</span>
                         <span class="step-sub">Dispatch Fleet</span>
                     </div>
@@ -208,36 +194,97 @@
             <!-- Executive Fleet Health & KPI Operations Console -->
             <section class="summary-cards">
                 <div class="card summary-card total">
-                    <div class="card-icon"><i class='bx bxs-package'></i></div>
+                    <div class="card-top-row">
+                        <div class="card-icon"><i class='bx bxs-package'></i></div>
+                        <span class="card-metric-pill">Mesh Fleet</span>
+                    </div>
                     <div class="card-info">
-                        <h3 id="totalBins">0</h3>
+                        <div class="stat-number-row">
+                            <h3 id="totalBins">0</h3>
+                            <div class="stat-sparkline" title="Fleet deployment trajectory">
+                                <svg width="50" height="24" viewBox="0 0 50 24" fill="none">
+                                    <defs>
+                                        <linearGradient id="sparkTotal" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+                                            <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M2 19 L12 17 L22 18 L32 12 L40 10 L48 4" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 19 L12 17 L22 18 L32 12 L40 10 L48 4 L48 24 L2 24 Z" fill="url(#sparkTotal)"/>
+                                    <circle cx="48" cy="4" r="2.5" fill="#38bdf8"/>
+                                </svg>
+                            </div>
+                        </div>
                         <p>Total Bins</p>
                     </div>
-                    <span class="card-metric-pill">Mesh Fleet</span>
                 </div>
                 <div class="card summary-card normal">
-                    <div class="card-icon"><i class='bx bxs-check-circle'></i></div>
+                    <div class="card-top-row">
+                        <div class="card-icon"><i class='bx bxs-check-circle'></i></div>
+                        <span class="card-metric-pill normal">Safe Range (0-49%)</span>
+                    </div>
                     <div class="card-info">
-                        <h3 id="normalBins">0</h3>
+                        <div class="stat-number-row">
+                            <h3 id="normalBins">0</h3>
+                            <div class="stat-progress-ring" title="Fleet Normal Ratio">
+                                <svg width="28" height="28" viewBox="0 0 36 36">
+                                    <circle class="ring-bg" cx="18" cy="18" r="14" fill="none" stroke="rgba(34, 197, 94, 0.18)" stroke-width="3.5"/>
+                                    <circle class="ring-val normal" id="normalRingProgress" cx="18" cy="18" r="14" fill="none" stroke="#22c55e" stroke-width="3.5" stroke-dasharray="88" stroke-dashoffset="35" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                        </div>
                         <p>Normal</p>
                     </div>
-                    <span class="card-metric-pill normal">Safe Range (0-49%)</span>
                 </div>
                 <div class="card summary-card warning">
-                    <div class="card-icon"><i class='bx bxs-error'></i></div>
+                    <div class="card-top-row">
+                        <div class="card-icon"><i class='bx bxs-error'></i></div>
+                        <span class="card-metric-pill warning">Warning (80-89%)</span>
+                    </div>
                     <div class="card-info">
-                        <h3 id="nearlyFullBins">0</h3>
+                        <div class="stat-number-row">
+                            <h3 id="nearlyFullBins">0</h3>
+                            <div class="stat-sparkline" title="Warning trend trajectory">
+                                <svg width="50" height="24" viewBox="0 0 50 24" fill="none">
+                                    <defs>
+                                        <linearGradient id="sparkWarning" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#f97316" stop-opacity="0.35"/>
+                                            <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M2 20 L14 18 L24 14 L36 16 L48 7" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 20 L14 18 L24 14 L36 16 L48 7 L48 24 L2 24 Z" fill="url(#sparkWarning)"/>
+                                    <circle cx="48" cy="7" r="2.5" fill="#f97316"/>
+                                </svg>
+                            </div>
+                        </div>
                         <p>Nearly Full</p>
                     </div>
-                    <span class="card-metric-pill warning">Warning (80-89%)</span>
                 </div>
                 <div class="card summary-card critical">
-                    <div class="card-icon"><i class='bx bxs-error-circle'></i></div>
+                    <div class="card-top-row">
+                        <div class="card-icon"><i class='bx bxs-error-circle'></i></div>
+                        <span class="card-metric-pill critical">Emergency (&ge;90%)</span>
+                    </div>
                     <div class="card-info">
-                        <h3 id="criticalBins">0</h3>
+                        <div class="stat-number-row">
+                            <h3 id="criticalBins">0</h3>
+                            <div class="stat-sparkline" title="Emergency dispatch velocity">
+                                <svg width="50" height="24" viewBox="0 0 50 24" fill="none">
+                                    <defs>
+                                        <linearGradient id="sparkCritical" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#ef4444" stop-opacity="0.35"/>
+                                            <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M2 21 L12 19 L22 20 L32 9 L40 12 L48 4" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 21 L12 19 L22 20 L32 9 L40 12 L48 4 L48 24 L2 24 Z" fill="url(#sparkCritical)"/>
+                                    <circle cx="48" cy="4" r="2.5" fill="#ef4444"/>
+                                </svg>
+                            </div>
+                        </div>
                         <p>Critical</p>
                     </div>
-                    <span class="card-metric-pill critical">Emergency (&ge;90%)</span>
                 </div>
             </section>
 
@@ -253,13 +300,14 @@
                         <!-- Top Map Command Bar with LIVE MONITORING -->
                         <div class="map-command-bar">
                             <div class="map-command-left">
-                                <span class="live-monitoring-badge">
+                                <div class="telemetry-grouped-badge">
                                     <span class="radar-ping-ring"></span>
                                     <span class="radar-ping-dot"></span>
-                                    LIVE SENSOR RADAR
-                                </span>
-                                <span class="map-sector-tag"><i class='bx bx-current-location'></i> CAMPUS SECTOR 04</span>
-                                <span class="map-node-count-badge">12/12 Pinging</span>
+                                    <span class="tg-title">LIVE SENSOR RADAR</span>
+                                    <span class="tg-sep">&bull;</span>
+                                    <span class="tg-sub"><i class='bx bx-current-location'></i> SECTOR 04</span>
+                                </div>
+                                <span class="map-node-count-badge"><span class="node-ping-dot"></span> 12/12 Pinging</span>
                             </div>
                             <div class="map-command-right">
                                 <span class="map-telemetry-tag"><i class='bx bx-crosshair'></i> 12.9716&deg; N, 77.5946&deg; E</span>
@@ -274,7 +322,27 @@
                         <div class="map-placeholder" id="mapPlaceholder">
                             <div class="map-bg">
                                 <div class="map-grid-overlay"></div>
-                                <div class="map-radar-sweep"></div>
+                                <div class="map-radar-sweep">
+                                    <div class="radar-scope-rings">
+                                        <div class="radar-range-ring ring-1"></div>
+                                        <div class="radar-range-ring ring-2"></div>
+                                        <div class="radar-range-ring ring-3"></div>
+                                        <div class="radar-crosshair-h"></div>
+                                        <div class="radar-crosshair-v"></div>
+                                    </div>
+                                    <div class="radar-sweep-scanner">
+                                        <div class="radar-sweep-line"></div>
+                                        <div class="radar-sweep-tail"></div>
+                                    </div>
+                                    <div class="radar-pings-matrix">
+                                        <span class="radar-grid-ping ping-node-1" style="top:22%; left:28%;"></span>
+                                        <span class="radar-grid-ping ping-node-2" style="top:38%; left:58%;"></span>
+                                        <span class="radar-grid-ping ping-node-3" style="top:62%; left:34%;"></span>
+                                        <span class="radar-grid-ping ping-node-4" style="top:72%; left:68%;"></span>
+                                        <span class="radar-grid-ping ping-node-5" style="top:28%; left:78%;"></span>
+                                        <span class="radar-grid-ping ping-node-6" style="top:82%; left:45%;"></span>
+                                    </div>
+                                </div>
                                 <div class="map-label">
                                     <i class='bx bx-target-lock'></i> Smart Campus Telemetry Matrix
                                 </div>
@@ -339,26 +407,6 @@
                             <!-- Populated dynamically with action buttons -->
                         </div>
                     </div>
-
-                    <!-- Recommended Route Preview -->
-                    <div class="arena-card route-arena-card">
-                        <div class="arena-card-header">
-                            <h2 class="section-title"><i class='bx bxs-navigation'></i> Today's Recommended Collection Route</h2>
-                            <span class="arena-tag">Priority Sequenced</span>
-                        </div>
-                        <div class="route-toolbar">
-                            <span class="route-telemetry-status"><i class='bx bx-git-commit'></i> 5 Active Waypoints</span>
-                            <span class="route-auto-seq-pill"><i class='bx bx-check-double'></i> Shortest Critical Path</span>
-                        </div>
-                        <div class="route-container" id="routeContainer">
-                            <!-- Populated dynamically -->
-                        </div>
-                        <p class="route-note">
-                            <i class='bx bx-info-circle'></i>
-                            This is a basic priority-based route. Bins with higher fill levels are
-                            collected first. Geographic route optimization will be added later.
-                        </p>
-                    </div>
                 </section>
             </div>
 
@@ -414,20 +462,26 @@
                             <span class="roadmap-status-badge active">● Operational Prototype</span>
                         </div>
                     </div>
-                    <div class="roadmap-card pending">
+                    <div class="roadmap-card pending locked-preview-glass">
                         <div class="roadmap-icon"><i class='bx bx-data'></i></div>
                         <div class="roadmap-content">
-                            <h4>Firebase Realtime DB</h4>
+                            <div class="roadmap-title-row">
+                                <h4>Firebase Realtime DB</h4>
+                                <span class="locked-preview-chip"><i class='bx bxs-lock-alt'></i> Staged</span>
+                            </div>
                             <p>Ready for live database listener connection to stream hardware sensor readings.</p>
-                            <span class="roadmap-status-badge pending">● Awaiting Cloud Sync</span>
+                            <span class="roadmap-status-badge pending"><span class="badge-dot"></span> Awaiting Cloud Sync</span>
                         </div>
                     </div>
-                    <div class="roadmap-card pending">
+                    <div class="roadmap-card pending locked-preview-glass">
                         <div class="roadmap-icon"><i class='bx bx-brain'></i></div>
                         <div class="roadmap-content">
-                            <h4>AI Predictive Engine</h4>
+                            <div class="roadmap-title-row">
+                                <h4>AI Predictive Engine</h4>
+                                <span class="locked-preview-chip"><i class='bx bxs-lock-alt'></i> Beta v2.4</span>
+                            </div>
                             <p>Regression model architecture designed to forecast time-to-overflow from historical data.</p>
-                            <span class="roadmap-status-badge future">● Pre-trained v2.4 Architecture</span>
+                            <span class="roadmap-status-badge future"><span class="badge-dot"></span> Pre-trained Architecture</span>
                         </div>
                     </div>
                     <div class="roadmap-card pending">
@@ -477,78 +531,7 @@
         </div>
 
         <!-- ============================================================
-             PAGE 3: COLLECTION ROUTE (LOGISTICS PLANNING INTERFACE)
-        ============================================================ -->
-        <div class="page" id="page-route">
-            <!-- Route statistics -->
-            <section class="section">
-                <h2 class="section-title"><i class='bx bxs-info-circle'></i> Route Summary</h2>
-                <div class="route-stats">
-                    <div class="route-stat-card">
-                        <i class='bx bxs-package'></i>
-                        <h3 id="routeStops">0</h3>
-                        <p>Stops</p>
-                    </div>
-                    <div class="route-stat-card">
-                        <i class='bx bxs-error-circle'></i>
-                        <h3 id="routeCritical">0</h3>
-                        <p>Critical Bins</p>
-                    </div>
-                    <div class="route-stat-card">
-                        <i class='bx bxs-time-five'></i>
-                        <h3 id="routeETA">~30 min</h3>
-                        <p>Estimated Time</p>
-                    </div>
-                    <div class="route-stat-card">
-                        <i class='bx bxs-car'></i>
-                        <h3 id="routeDistance">~5 km</h3>
-                        <p>Est. Distance</p>
-                    </div>
-                </div>
-            </section>
-
-            <div class="two-column">
-                <!-- Route sequence -->
-                <section class="section">
-                    <h2 class="section-title"><i class='bx bxs-navigation'></i> Today's Recommended Collection Route</h2>
-                    <div class="route-container" id="routeContainerPage"></div>
-                    <p class="route-note">
-                        <i class='bx bx-info-circle'></i>
-                        This is a basic priority-based route demonstration. Bins with higher fill
-                        levels are collected first. Actual geographic route optimization
-                        (using GPS coordinates and map APIs) will be connected in a future update.
-                    </p>
-                </section>
-
-                <!-- Map -->
-                <section class="section">
-                    <h2 class="section-title"><i class='bx bxs-map-pin'></i> Bin Locations</h2>
-                    <div class="map-placeholder" id="mapPlaceholderPage">
-                        <div class="map-bg map-bg-page">
-                            <div class="map-grid-overlay"></div>
-                            <div class="map-radar-sweep"></div>
-                            <div class="map-label">Campus Map</div>
-                            <div class="road road-h"></div>
-                            <div class="road road-v"></div>
-                            <div class="road road-h2"></div>
-                            <div class="road road-v2"></div>
-                            <div class="map-building bldg-main" style="top:18%; left:16%;">Main Block</div>
-                            <div class="map-building bldg-canteen" style="top:32%; left:52%;">Canteen</div>
-                            <div class="map-building bldg-lib" style="top:52%; left:26%;">Library</div>
-                            <div class="map-building bldg-hostel" style="top:68%; left:70%;">Hostel Block</div>
-                        </div>
-                    </div>
-                    <p class="route-note">
-                        <i class='bx bx-info-circle'></i>
-                        Placeholder campus map. A real Google Maps / Leaflet.js
-                        integration with GPS coordinates will be added later.
-                    </p>
-                </section>
-            </div>
-        </div>
-
-        <!-- ============================================================
-             PAGE 4: COLLECTION HISTORY (AUDIT TRAIL)
+             PAGE 3: COLLECTION HISTORY (AUDIT TRAIL)
         ============================================================ -->
         <div class="page" id="page-history">
             <section class="section">
@@ -643,24 +626,42 @@
                 </div>
             </section>
 
-            <!-- AI Prediction Feature Showcase -->
+            <!-- AI Prediction Feature Showcase (Locked Preview Glass Style) -->
             <section class="section ai-section">
-                <h2 class="section-title"><i class='bx bxs-brain'></i> AI Prediction — Coming Soon</h2>
-                <div class="ai-placeholder">
-                    <div class="ai-neural-ring">
-                        <i class='bx bx-loader-circle bx-spin'></i>
+                <div class="ai-locked-preview-card">
+                    <div class="locked-preview-header">
+                        <div class="locked-badge-group">
+                            <span class="locked-preview-badge"><i class='bx bxs-lock-alt'></i> LOCKED PREVIEW</span>
+                            <span class="locked-preview-version"><i class='bx bx-brain'></i> ML Neural Model v2.4</span>
+                        </div>
+                        <span class="locked-status-tag"><i class='bx bx-shield-quarter'></i> Offline Calibrated</span>
                     </div>
-                    <p class="ai-text">
-                        "Bin 06 is predicted to reach 100% by tomorrow evening."
-                    </p>
-                    <p class="ai-subtext">
-                        Machine-learning based fill-level prediction will be integrated in a
-                        future update. The model will analyze historical fill patterns and
-                        predict when each bin will need collection.
-                    </p>
-                    <div class="ai-badges">
-                        <span class="badge badge-coming-soon">Future Feature</span>
-                        <span class="badge badge-ai-model">ML Neural Model v2.4</span>
+
+                    <div class="locked-preview-body">
+                        <div class="locked-graph-backdrop">
+                            <svg class="locked-neural-svg" viewBox="0 0 600 120" preserveAspectRatio="none">
+                                <path d="M0,95 C120,95 180,60 280,60 C380,60 420,25 600,15" fill="none" stroke="rgba(0, 210, 180, 0.3)" stroke-width="2.5" stroke-dasharray="6,4"/>
+                                <path d="M0,105 C140,105 200,80 300,75 C400,70 450,45 600,35" fill="none" stroke="rgba(56, 189, 248, 0.2)" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="locked-overlay-content">
+                            <div class="locked-icon-shield">
+                                <i class='bx bxs-lock-alt'></i>
+                                <span class="shield-pulse"></span>
+                            </div>
+                            <h3>AI Overflow Prediction Engine</h3>
+                            <p class="ai-text">
+                                &ldquo;Bin 06 is predicted to reach 100% capacity by tomorrow evening.&rdquo;
+                            </p>
+                            <p class="ai-subtext">
+                                Pre-trained neural regression model analyzing historical ultrasonic fill curves to generate predictive dispatch triggers before overflow events occur.
+                            </p>
+                            <div class="locked-pipeline-tags">
+                                <span class="pipeline-tag"><i class='bx bx-check-circle'></i> Weights Pre-compiled</span>
+                                <span class="pipeline-tag"><i class='bx bx-git-branch'></i> Sensor Ingestion Ready</span>
+                                <span class="pipeline-tag locked"><i class='bx bx-lock-alt'></i> Awaiting Live Cloud Pipeline</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -760,7 +761,7 @@
                         </div>
                         <div class="settings-row">
                             <label>Firebase</label>
-                            <span class="status-badge nearly-full" style="font-size:0.75rem">Not Connected</span>
+                            <span class="locked-preview-pill"><i class='bx bxs-lock-alt'></i> Cloud Sync Staged</span>
                         </div>
                         <div class="settings-row">
                             <label>Sensors online</label>
