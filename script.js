@@ -625,10 +625,12 @@ async function buildRouteHTML() {
     };
 }
 
-function generateRoute() {
+async function generateRoute() {
     const el = document.getElementById('routeContainer');
     if (!el) return;
-    const { html } = buildRouteHTML();
+
+    const { html } = await buildRouteHTML();
+
     el.innerHTML = html;
 }
 
