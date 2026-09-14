@@ -653,24 +653,19 @@ async function renderRoutePage() {
     }
 
     const etaEl = document.getElementById('routeETA');
-
     if (etaEl) {
-        etaEl.textContent =
-            stopCount === 0
-                ? '~0 min'
-                : `~${stopCount * 6 + 12} min`;
+        etaEl.textContent = stopCount === 0
+            ? '~0 min'
+            : `~${stopCount * 6 + 12} min`;
     }
 
     const distEl = document.getElementById('routeDistance');
-
     if (distEl) {
-        distEl.textContent =
-            stopCount === 0
-                ? '~0.0 km'
-                : `~${(stopCount * 0.75 + 1.2).toFixed(1)} km`;
+        distEl.textContent = stopCount === 0
+            ? '~0.0 km'
+            : `~${(stopCount * 0.75 + 1.2).toFixed(1)} km`;
     }
 }
-/**
  * renderMapMarkersIn — Places interactive color-coded beacons onto the live GIS campus map.
  */
 function renderMapMarkersIn(mapBgSelector) {
