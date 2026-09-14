@@ -424,7 +424,7 @@ body {
     backdrop-filter: var(--glass-blur-md);
     -webkit-backdrop-filter: var(--glass-blur-md);
     border-bottom: 1px solid var(--border-subtle);
-    padding: 20px 32px;
+    padding: 14px 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -438,7 +438,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 4px;
+    margin-bottom: 0;
 }
 
 .telemetry-beacon {
@@ -488,19 +488,6 @@ body {
     background: var(--status-critical-bg);
     color: var(--status-critical);
     border-color: rgba(251, 113, 133, 0.35);
-}
-
-.header-left h1 {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-}
-
-.header-left .subtitle {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-top: 2px;
 }
 
 .header-right {
@@ -1615,6 +1602,47 @@ body {
     font-weight: 600;
 }
 
+.route-badges-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.route-dist-badge {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--accent-teal);
+    background: rgba(34, 211, 197, 0.12);
+    border: 1px solid rgba(34, 211, 197, 0.25);
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.route-dist-badge.origin,
+.route-dist-badge.return {
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--border-subtle);
+}
+
+.route-metric-crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+.route-metric-crumb strong {
+    color: var(--text-primary);
+}
+
 .empty-route-state {
     padding: 28px;
     text-align: center;
@@ -1850,163 +1878,6 @@ body {
     color: var(--text-muted);
 }
 
-/* ============================================================
-   10. BOTTOM SYSTEM STATUS PANELS (FIREBASE & AI ENGINE)
-   ============================================================ */
-.platform-system-status-section {
-    margin-bottom: 20px;
-}
-
-.system-status-dual-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.status-panel-card {
-    background: var(--glass-level-1);
-    backdrop-filter: var(--glass-blur-md);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    box-shadow: var(--shadow-card);
-}
-
-.status-panel-top {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 14px;
-}
-
-.status-panel-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-}
-
-.status-panel-icon.firebase {
-    background: rgba(251, 191, 36, 0.12);
-    color: var(--status-warning);
-    border: 1px solid rgba(251, 191, 36, 0.3);
-}
-
-.status-panel-icon.ai {
-    background: var(--accent-teal-soft);
-    color: var(--accent-teal);
-    border: 1px solid rgba(34, 211, 197, 0.3);
-}
-
-.status-panel-meta {
-    flex: 1;
-}
-
-.panel-eyebrow {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text-dim);
-    letter-spacing: 0.08em;
-}
-
-.status-panel-meta h3 {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-top: 2px;
-}
-
-.status-indicator-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border-radius: var(--radius-full);
-    font-size: 11.5px;
-    font-weight: 700;
-}
-
-.status-indicator-pill.awaiting {
-    background: rgba(251, 191, 36, 0.12);
-    color: var(--status-warning);
-    border: 1px solid rgba(251, 191, 36, 0.3);
-}
-
-.status-indicator-pill.synced {
-    background: var(--accent-teal-soft);
-    color: var(--accent-teal);
-    border: 1px solid rgba(34, 211, 197, 0.35);
-}
-
-.status-indicator-pill.error {
-    background: var(--status-critical-bg);
-    color: var(--status-critical);
-    border: 1px solid rgba(251, 113, 133, 0.35);
-}
-
-.status-indicator-pill.ai-ready {
-    background: rgba(103, 232, 249, 0.14);
-    color: var(--accent-cyan);
-    border: 1px solid rgba(103, 232, 249, 0.35);
-}
-
-.status-panel-desc {
-    font-size: 12.5px;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    margin-bottom: 16px;
-}
-
-.status-panel-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    padding-top: 14px;
-    border-top: 1px solid var(--border-subtle);
-}
-
-.sp-metric {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.sp-metric-lbl {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text-dim);
-    text-transform: uppercase;
-}
-
-.sp-metric-val {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-    word-break: break-all;
-}
-
-.sp-metric-val.highlight {
-    color: var(--accent-teal);
-}
-
-.sp-action-link {
-    background: transparent;
-    border: none;
-    color: var(--accent-teal);
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: left;
-    transition: transform var(--transition-fast);
-}
-
-.sp-action-link:hover {
-    transform: translateX(4px);
-}
 
 /* ============================================================
    11. DEDICATED SMART BINS PAGE
@@ -2203,6 +2074,11 @@ body {
     padding: 12px 20px;
     gap: 18px;
     flex-shrink: 0;
+}
+
+.ai-route-kpi-bar {
+    margin-bottom: 20px;
+    justify-content: space-around;
 }
 
 .route-kpi-item {
@@ -3211,17 +3087,7 @@ body {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .system-status-dual-grid {
-        grid-template-columns: 1fr;
-    }
 
-    .distribution-cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .history-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
 
     .main-header {
         padding: 16px 20px;

@@ -51,28 +51,18 @@
                 <span>Smart Bins</span>
                 <span class="nav-indicator"></span>
             </a>
-            <a href="#" class="nav-link" data-page="route">
-                <i class='bx bx-trip'></i>
-                <span>Collection Route</span>
-                <span class="nav-indicator"></span>
-            </a>
 
             <!-- Intelligence Group -->
-            <div class="nav-section-label">AI &amp; Intelligence</div>
-            <a href="#" class="nav-link" data-page="ai">
-                <i class='bx bx-brain'></i>
-                <span>AI Workspace</span>
-                <span class="nav-chip-badge">AI 2.0</span>
-                <span class="nav-indicator"></span>
-            </a>
+            <div class="nav-section-label">Analytics &amp; Intelligence</div>
             <a href="#" class="nav-link" data-page="analytics">
                 <i class='bx bxs-bar-chart-alt-2'></i>
                 <span>Analytics</span>
                 <span class="nav-indicator"></span>
             </a>
-            <a href="#" class="nav-link" data-page="history">
-                <i class='bx bxs-time-five'></i>
-                <span>History Log</span>
+            <a href="#" class="nav-link" data-page="ai">
+                <i class='bx bx-brain'></i>
+                <span>AI Workspace</span>
+                <span class="nav-chip-badge">AI 2.0</span>
                 <span class="nav-indicator"></span>
             </a>
 
@@ -130,8 +120,6 @@
                     <span class="telemetry-txt">LIVE SENSOR TELEMETRY &bull; CAMPUS GRID SECTOR 04</span>
                     <span class="telemetry-chip-tag" id="headerConnectionBadge"><i class='bx bx-sync'></i> Awaiting Sync</span>
                 </div>
-                <h1 id="pageTitle">Operations Command Center</h1>
-                <p class="subtitle" id="pageSubtitle">Real-time ultrasonic telemetry, IoT fleet monitoring, and dynamic collection dispatch</p>
             </div>
             <div class="header-right">
                 <div class="header-metrics-pill">
@@ -271,7 +259,7 @@
             ======================================================== -->
             <div class="operations-main-arena">
                 
-                <!-- Left: Live Campus GIS Map -->
+                <!-- Left: Live Campus GIS Radar Map -->
                 <section class="arena-map-section">
                     <div class="arena-card map-arena-card">
                         <!-- Top Map Command Bar -->
@@ -378,23 +366,6 @@
                 </section>
             </div>
 
-            <!-- Today's Optimized Collection Route (Quick Summary) -->
-            <section class="section dashboard-route-section">
-                <div class="section-header-bar">
-                    <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bx-trip'></i> Today's Optimized Collection Route</h2>
-                        <span class="section-subtitle">Automated priority sequence generated from live ultrasonic thresholds</span>
-                    </div>
-                    <button class="btn-action-primary" onclick="navigateToPage('route')">
-                        Open Full Route Planner <i class='bx bx-right-arrow-alt'></i>
-                    </button>
-                </div>
-                <div class="route-summary-panel">
-                    <div class="route-timeline-container" id="routeContainer">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-            </section>
 
             <!-- Compact Telemetry Overview -->
             <section class="section compact-bins-section">
@@ -411,87 +382,6 @@
                 </div>
             </section>
 
-            <!-- ========================================================
-                 BOTTOM SYSTEM STATUS PANELS:
-                 Firebase Realtime Database Status + AI Engine Readiness
-            ======================================================== -->
-            <section class="section platform-system-status-section">
-                <div class="system-status-dual-grid">
-                    <!-- Firebase Realtime Database Status Panel -->
-                    <div class="status-panel-card firebase-panel">
-                        <div class="status-panel-top">
-                            <div class="status-panel-icon firebase">
-                                <i class='bx bxs-data'></i>
-                            </div>
-                            <div class="status-panel-meta">
-                                <span class="panel-eyebrow">BACKEND STREAM</span>
-                                <h3>Firebase Realtime Database</h3>
-                            </div>
-                            <span class="status-indicator-pill awaiting" id="firebaseStatusPill">
-                                <span class="status-ping-ring"></span>
-                                <span class="status-dot"></span>
-                                <span class="pill-text" id="firebaseStatusLabel">Awaiting Cloud Sync</span>
-                            </span>
-                        </div>
-                        <div class="status-panel-body">
-                            <p class="status-panel-desc" id="firebaseStatusDesc">
-                                Listening for live ultrasonic telemetry packets from ESP32 nodes connected to Firebase Realtime Database.
-                            </p>
-                            <div class="status-panel-metrics">
-                                <div class="sp-metric">
-                                    <span class="sp-metric-lbl">Endpoint</span>
-                                    <span class="sp-metric-val">asia-southeast1.firebasedatabase.app</span>
-                                </div>
-                                <div class="sp-metric">
-                                    <span class="sp-metric-lbl">Node Path</span>
-                                    <span class="sp-metric-val">/bins</span>
-                                </div>
-                                <div class="sp-metric">
-                                    <span class="sp-metric-lbl">Sync State</span>
-                                    <span class="sp-metric-val highlight" id="firebaseSyncStateVal">Awaiting Data</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- AI Engine Readiness Panel -->
-                    <div class="status-panel-card ai-panel">
-                        <div class="status-panel-top">
-                            <div class="status-panel-icon ai">
-                                <i class='bx bx-brain'></i>
-                            </div>
-                            <div class="status-panel-meta">
-                                <span class="panel-eyebrow">INTELLIGENCE SUBSYSTEM</span>
-                                <h3>AI Predictive &amp; Route Engine</h3>
-                            </div>
-                            <span class="status-indicator-pill ai-ready" id="aiStatusPill">
-                                <span class="status-ping-ring"></span>
-                                <span class="status-dot"></span>
-                                <span class="pill-text">Model Architecture Ready</span>
-                            </span>
-                        </div>
-                        <div class="status-panel-body">
-                            <p class="status-panel-desc">
-                                Dual-pipeline architecture prepared to receive live sensor fill velocity data for overflow forecasting and TSP route optimization.
-                            </p>
-                            <div class="status-panel-metrics">
-                                <div class="sp-metric">
-                                    <span class="sp-metric-lbl">Predictive Model</span>
-                                    <span class="sp-metric-val">Neural Fill Velocity</span>
-                                </div>
-                                <div class="sp-metric">
-                                    <span class="sp-metric-lbl">Route Engine</span>
-                                    <span class="sp-metric-val">Priority TSP Solver</span>
-                                </div>
-                                <div class="sp-metric">
-                                    <span class="sp-metric-lbl">Workspace</span>
-                                    <button class="sp-action-link" onclick="navigateToPage('ai')">Open AI &rarr;</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
         </div>
 
@@ -532,58 +422,62 @@
         </div>
 
         <!-- ============================================================
-             PAGE 3: COLLECTION ROUTE (DEDICATED LOGISTICS DISPATCH)
+             PAGE 3: ANALYTICS & TELEMETRY
         ============================================================ -->
-        <div class="page" id="page-route">
-            <!-- Route Dispatch Header Stats -->
-            <section class="route-dispatch-header-card">
-                <div class="route-header-info">
-                    <span class="dispatch-tag"><i class='bx bx-navigation'></i> DYNAMIC LOGISTICS SEQUENCE</span>
-                    <h2>Intelligent Collection Route Dispatch</h2>
-                    <p>Priority-sequenced collection route computed in real-time based on ultrasonic capacity thresholds. Critical bins are prioritized first to prevent campus overflow.</p>
-                </div>
-                <div class="route-kpi-bar">
-                    <div class="route-kpi-item">
-                        <span class="rk-lbl">TOTAL STOPS</span>
-                        <span class="rk-val" id="routeStops">0</span>
-                    </div>
-                    <div class="rk-sep"></div>
-                    <div class="route-kpi-item">
-                        <span class="rk-lbl">CRITICAL BINS</span>
-                        <span class="rk-val critical" id="routeCritical">0</span>
-                    </div>
-                    <div class="rk-sep"></div>
-                    <div class="route-kpi-item">
-                        <span class="rk-lbl">EST. TRAVEL TIME</span>
-                        <span class="rk-val" id="routeETA">~0 min</span>
-                    </div>
-                    <div class="rk-sep"></div>
-                    <div class="route-kpi-item">
-                        <span class="rk-lbl">EST. DISTANCE</span>
-                        <span class="rk-val" id="routeDistance">~0.0 km</span>
+        <div class="page" id="page-analytics">
+            <section class="section">
+                <div class="section-header-bar">
+                    <div class="header-bar-left">
+                        <h2 class="section-title"><i class='bx bxs-bar-chart-alt-2'></i> Live Bin Fill Levels — All Monitored Nodes</h2>
+                        <span class="section-subtitle">Real-time percentage telemetry comparison from Firebase Realtime Database</span>
                     </div>
                 </div>
+                <div class="chart-container" id="chartContainerAnalytics"></div>
             </section>
 
-            <!-- Route Timeline Graph -->
-            <section class="route-timeline-section">
-                <div class="route-timeline-card">
-                    <div class="route-card-topbar">
-                        <div class="rct-left">
-                            <span class="rct-dot"></span>
-                            <strong>Waypoint Node Graph</strong>
-                        </div>
-                        <span class="rct-sub">Central Fleet Depot &bull; Bidirectional Loop</span>
+            <!-- Status distribution -->
+            <section class="section">
+                <div class="section-header-bar">
+                    <div class="header-bar-left">
+                        <h2 class="section-title"><i class='bx bxs-pie-chart-alt-2'></i> Fleet Capacity Distribution</h2>
+                        <span class="section-subtitle">Breakdown of campus bins by operational severity tier</span>
                     </div>
-                    <div class="route-timeline-container full-page-route" id="routeContainerPage">
-                        <!-- Populated by JS -->
+                </div>
+                <div class="distribution-cards">
+                    <div class="distribution-card">
+                        <div class="dist-bar-bg">
+                            <div class="dist-bar" id="distNormal" style="background:var(--accent-teal)"></div>
+                        </div>
+                        <span class="dist-label">Normal (0–49%)</span>
+                        <strong class="dist-value" id="distNormalVal">0</strong>
+                    </div>
+                    <div class="distribution-card">
+                        <div class="dist-bar-bg">
+                            <div class="dist-bar" id="distMedium" style="background:var(--status-medium)"></div>
+                        </div>
+                        <span class="dist-label">Medium (50–79%)</span>
+                        <strong class="dist-value" id="distMediumVal">0</strong>
+                    </div>
+                    <div class="distribution-card">
+                        <div class="dist-bar-bg">
+                            <div class="dist-bar" id="distWarning" style="background:var(--status-warning)"></div>
+                        </div>
+                        <span class="dist-label">Nearly Full (80–89%)</span>
+                        <strong class="dist-value" id="distWarningVal">0</strong>
+                    </div>
+                    <div class="distribution-card">
+                        <div class="dist-bar-bg">
+                            <div class="dist-bar" id="distCritical" style="background:var(--status-critical)"></div>
+                        </div>
+                        <span class="dist-label">Critical (&ge;90%)</span>
+                        <strong class="dist-value" id="distCriticalVal">0</strong>
                     </div>
                 </div>
             </section>
         </div>
 
         <!-- ============================================================
-             PAGE 4: DEDICATED AI WORKSPACE (PREDICTIVE ENGINE + ROUTE PLANNER)
+             PAGE 4: DEDICATED AI WORKSPACE (PREDICTIVE ENGINE + AUTONOMOUS DISPATCH)
         ============================================================ -->
         <div class="page" id="page-ai">
             
@@ -591,14 +485,14 @@
             <section class="ai-workspace-banner">
                 <div class="ai-banner-content">
                     <div class="ai-badge-row">
-                        <span class="ai-pill"><i class='bx bx-brain'></i> AI ENGINE v2.4</span>
-                        <span class="ai-pill secondary"><i class='bx bx-network-chart'></i> Dual Neural Pipelines</span>
+                        <span class="ai-pill"><i class='bx bx-brain'></i> AI HUB v2.4</span>
+                        <span class="ai-pill secondary"><i class='bx bx-navigation'></i> Autonomous Logistics</span>
                     </div>
                     <h2>Predictive Intelligence &amp; Autonomous Logistics</h2>
-                    <p>Designed to model campus waste accumulation velocity, forecast overflow events hours in advance, and generate cost-optimized collection routes.</p>
+                    <p>Designed to model campus waste accumulation velocity, forecast overflow events hours in advance, and generate priority-optimized collection dispatches.</p>
                 </div>
                 <div class="ai-banner-actions">
-                    <button class="btn-action-primary" onclick="alert('AI Engine calibrating with live telemetry pipeline.')">
+                    <button class="btn-action-primary" onclick="alert('AI Engine recalibrated with live Firebase telemetry stream.')">
                         <i class='bx bx-refresh'></i> Re-calibrate Models
                     </button>
                 </div>
@@ -661,14 +555,14 @@
                     </div>
                 </section>
 
-                <!-- 2. AI ROUTE PLANNER -->
+                <!-- 2. AUTONOMOUS DISPATCH OPTIMIZER (CONSOLIDATED AT ONE PLACE) -->
                 <section class="ai-module-card">
                     <div class="ai-module-header">
                         <div class="aim-title-group">
-                            <div class="aim-icon"><i class='bx bx-trip'></i></div>
+                            <div class="aim-icon"><i class='bx bx-navigation'></i></div>
                             <div>
-                                <h3>AI Route Planner</h3>
-                                <span class="aim-subtitle">Autonomous Traveling Salesperson &amp; Priority Logistics</span>
+                                <h3>Autonomous Dispatch Optimizer</h3>
+                                <span class="aim-subtitle">Priority-Sequenced TSP Logistics &amp; Dynamic Fleet Routing</span>
                             </div>
                         </div>
                         <span class="aim-status-badge ready">
@@ -678,44 +572,40 @@
                     </div>
 
                     <div class="ai-module-body">
-                        <!-- AI Optimized Sequence UI -->
-                        <div class="ai-route-flow-card">
-                            <div class="ai-route-metrics-bar">
-                                <div class="arm-item">
-                                    <span class="arm-lbl">OPTIMIZATION STATUS</span>
-                                    <span class="arm-val ready"><i class='bx bx-check-shield'></i> Ready for Execution</span>
-                                </div>
-                                <div class="arm-item">
-                                    <span class="arm-lbl">ALGORITHM</span>
-                                    <span class="arm-val">Priority Constrained TSP</span>
-                                </div>
-                                <div class="arm-item">
-                                    <span class="arm-lbl">CONSTRAINTS</span>
-                                    <span class="arm-val">Fill &gt; 50% &bull; Critical First</span>
-                                </div>
+                        <!-- Route Dispatch Header Stats -->
+                        <div class="route-kpi-bar ai-route-kpi-bar">
+                            <div class="route-kpi-item">
+                                <span class="rk-lbl">TOTAL STOPS</span>
+                                <span class="rk-val" id="routeStops">0</span>
                             </div>
+                            <div class="rk-sep"></div>
+                            <div class="route-kpi-item">
+                                <span class="rk-lbl">CRITICAL BINS</span>
+                                <span class="rk-val critical" id="routeCritical">0</span>
+                            </div>
+                            <div class="rk-sep"></div>
+                            <div class="route-kpi-item">
+                                <span class="rk-lbl">EST. TRAVEL TIME</span>
+                                <span class="rk-val" id="routeETA">~0 min</span>
+                            </div>
+                            <div class="rk-sep"></div>
+                            <div class="route-kpi-item">
+                                <span class="rk-lbl">EST. DISTANCE</span>
+                                <span class="rk-val" id="routeDistance">~0.0 km</span>
+                            </div>
+                        </div>
 
-                            <!-- Flow Visualization -->
-                            <div class="ai-route-pipeline-diagram" id="aiRoutePipeline">
-                                <div class="pipeline-step start">
-                                    <span class="pipe-node-icon"><i class='bx bxs-institution'></i></span>
-                                    <div class="pipe-node-meta">
-                                        <strong>START POINT</strong>
-                                        <span>Central Fleet Depot</span>
-                                    </div>
+                        <!-- Route Timeline Node Graph -->
+                        <div class="route-timeline-card ai-route-card">
+                            <div class="route-card-topbar">
+                                <div class="rct-left">
+                                    <span class="rct-dot"></span>
+                                    <strong>AI-Sequenced Waypoint Graph</strong>
                                 </div>
-                                <div class="pipe-arrow">&darr;</div>
-                                <div class="pipeline-step priority" id="aiPipelineStops">
-                                    <!-- Populated dynamically from critical/priority bins -->
-                                </div>
-                                <div class="pipe-arrow">&darr;</div>
-                                <div class="pipeline-step end">
-                                    <span class="pipe-node-icon"><i class='bx bxs-flag-checkered'></i></span>
-                                    <div class="pipe-node-meta">
-                                        <strong>COLLECTION POINT</strong>
-                                        <span>Waste Processing &amp; Compaction</span>
-                                    </div>
-                                </div>
+                                <span class="rct-sub">Central Fleet Depot &bull; Bidirectional Loop</span>
+                            </div>
+                            <div class="route-timeline-container full-page-route" id="routeContainerPage">
+                                <!-- Populated by JS -->
                             </div>
                         </div>
                     </div>
@@ -724,122 +614,6 @@
             </div>
         </div>
 
-        <!-- ============================================================
-             PAGE 5: ANALYTICS (DEDICATED ANALYTICS WORKSPACE)
-        ============================================================ -->
-        <div class="page" id="page-analytics">
-            <section class="section">
-                <div class="section-header-bar">
-                    <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bxs-bar-chart-alt-2'></i> Live Bin Fill Levels — All Monitored Nodes</h2>
-                        <span class="section-subtitle">Real-time percentage telemetry comparison from Firebase Realtime Database</span>
-                    </div>
-                </div>
-                <div class="chart-container" id="chartContainerAnalytics"></div>
-            </section>
-
-            <!-- Status distribution -->
-            <section class="section">
-                <div class="section-header-bar">
-                    <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bxs-pie-chart-alt-2'></i> Fleet Capacity Distribution</h2>
-                        <span class="section-subtitle">Breakdown of campus bins by operational severity tier</span>
-                    </div>
-                </div>
-                <div class="distribution-cards">
-                    <div class="distribution-card">
-                        <div class="dist-bar-bg">
-                            <div class="dist-bar" id="distNormal" style="background:var(--accent-teal)"></div>
-                        </div>
-                        <span class="dist-label">Normal (0–49%)</span>
-                        <strong class="dist-value" id="distNormalVal">0</strong>
-                    </div>
-                    <div class="distribution-card">
-                        <div class="dist-bar-bg">
-                            <div class="dist-bar" id="distMedium" style="background:var(--status-medium)"></div>
-                        </div>
-                        <span class="dist-label">Medium (50–79%)</span>
-                        <strong class="dist-value" id="distMediumVal">0</strong>
-                    </div>
-                    <div class="distribution-card">
-                        <div class="dist-bar-bg">
-                            <div class="dist-bar" id="distWarning" style="background:var(--status-warning)"></div>
-                        </div>
-                        <span class="dist-label">Nearly Full (80–89%)</span>
-                        <strong class="dist-value" id="distWarningVal">0</strong>
-                    </div>
-                    <div class="distribution-card">
-                        <div class="dist-bar-bg">
-                            <div class="dist-bar" id="distCritical" style="background:var(--status-critical)"></div>
-                        </div>
-                        <span class="dist-label">Critical (&ge;90%)</span>
-                        <strong class="dist-value" id="distCriticalVal">0</strong>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <!-- ============================================================
-             PAGE 6: COLLECTION HISTORY (AUDIT LOG)
-        ============================================================ -->
-        <div class="page" id="page-history">
-            <section class="section">
-                <div class="section-header-bar">
-                    <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bxs-time-five'></i> Recent Collection Audit Records</h2>
-                        <span class="section-subtitle">Logged dispatch events, servicing crews, and resolution timestamps</span>
-                    </div>
-                </div>
-                <div class="table-wrapper">
-                    <table class="data-table" id="historyTable">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>Bin ID</th>
-                                <th>Location</th>
-                                <th>Fill Level at Servicing</th>
-                                <th>Assigned Worker</th>
-                                <th>Dispatch Classification</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyBody">
-                            <!-- Rendered by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section class="section">
-                <div class="section-header-bar">
-                    <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bxs-check-shield'></i> Weekly Servicing Performance</h2>
-                        <span class="section-subtitle">Aggregated dispatch efficiency metrics</span>
-                    </div>
-                </div>
-                <div class="history-stats">
-                    <div class="route-stat-card">
-                        <i class='bx bxs-check-circle' style="color:var(--accent-teal)"></i>
-                        <h3>24</h3>
-                        <p>Total Collections</p>
-                    </div>
-                    <div class="route-stat-card">
-                        <i class='bx bxs-package' style="color:var(--accent-cyan)"></i>
-                        <h3>10</h3>
-                        <p>Bins Serviced</p>
-                    </div>
-                    <div class="route-stat-card">
-                        <i class='bx bxs-error-circle' style="color:var(--status-critical)"></i>
-                        <h3>3</h3>
-                        <p>Emergency Collections</p>
-                    </div>
-                    <div class="route-stat-card">
-                        <i class='bx bxs-timer' style="color:var(--status-warning)"></i>
-                        <h3>12 min</h3>
-                        <p>Avg. Response Time</p>
-                    </div>
-                </div>
-            </section>
-        </div>
 
         <!-- ============================================================
              PAGE 7: SETTINGS & SYSTEM CONFIGURATION
@@ -1042,7 +816,6 @@
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-database-compat.js"></script>
-
     <!-- JavaScript Application Logic -->
     <script src="script.js"></script>
 </body>

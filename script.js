@@ -75,30 +75,15 @@ function updateFirebaseSyncUI(state, customLabel = null) {
         }
     }
 
-    // Bottom System Status Panel
-    const statusPill = document.getElementById('firebaseStatusPill');
-    const statusLabel = document.getElementById('firebaseStatusLabel');
-    const statusDesc = document.getElementById('firebaseStatusDesc');
-    const syncStateVal = document.getElementById('firebaseSyncStateVal');
+    // Settings Page Hardware / Sync state
     const settingsSyncState = document.getElementById('settingsSyncState');
-
-    if (statusPill && statusLabel) {
-        statusPill.className = `status-indicator-pill ${state}`;
+    if (settingsSyncState) {
         if (state === 'synced') {
-            statusLabel.textContent = "Live — Cloud Synced";
-            if (syncStateVal) syncStateVal.textContent = "Active Stream Connected";
-            if (statusDesc) statusDesc.textContent = "Successfully receiving live ultrasonic fill packets from field ESP32 nodes via Firebase Realtime Database.";
-            if (settingsSyncState) settingsSyncState.textContent = "Connected (Streaming)";
+            settingsSyncState.textContent = "Connected (Streaming)";
         } else if (state === 'error') {
-            statusLabel.textContent = "Connection Error";
-            if (syncStateVal) syncStateVal.textContent = "Disconnected / Error";
-            if (statusDesc) statusDesc.textContent = "Unable to establish WebSocket stream to Firebase. Verify network access and database rules.";
-            if (settingsSyncState) settingsSyncState.textContent = "Error";
+            settingsSyncState.textContent = "Error / Disconnected";
         } else {
-            statusLabel.textContent = "Awaiting Cloud Sync";
-            if (syncStateVal) syncStateVal.textContent = "Awaiting Initial Payload";
-            if (statusDesc) statusDesc.textContent = "Firebase configured and listening. Awaiting the first telemetry payload from smart bins.";
-            if (settingsSyncState) settingsSyncState.textContent = "Listening (Pending Data)";
+            settingsSyncState.textContent = "Listening (Pending Data)";
         }
     }
 }
@@ -142,27 +127,11 @@ binsRef.on("value", (snapshot) => {
 });
 
 
-/* ============================================================
-   2. COLLECTION AUDIT & STATIC METRICS
-   ============================================================ */
-const collectionHistory = [
-    { date: "Sep 12, 2026 — 08:30 AM", binId: "BIN-06", location: "Hostel B",      fillAtCollection: 97, collectedBy: "Officer Arjun", type: "emergency" },
-    { date: "Sep 12, 2026 — 08:15 AM", binId: "BIN-02", location: "Canteen",       fillAtCollection: 90, collectedBy: "Officer Arjun", type: "emergency" },
-    { date: "Sep 11, 2026 — 06:00 PM", binId: "BIN-05", location: "Parking Area",  fillAtCollection: 82, collectedBy: "Driver Meera",   type: "completed" },
-    { date: "Sep 11, 2026 — 05:30 PM", binId: "BIN-03", location: "Library",       fillAtCollection: 60, collectedBy: "Driver Meera",   type: "completed" },
-    { date: "Sep 11, 2026 — 02:00 PM", binId: "BIN-04", location: "Hostel A",      fillAtCollection: 45, collectedBy: "Officer Arjun", type: "completed" },
-    { date: "Sep 11, 2026 — 09:00 AM", binId: "BIN-01", location: "Main Block",    fillAtCollection: 50, collectedBy: "Driver Kabir",   type: "completed" },
-    { date: "Sep 10, 2026 — 07:00 PM", binId: "BIN-06", location: "Hostel B",      fillAtCollection: 95, collectedBy: "Officer Arjun", type: "emergency" },
-    { date: "Sep 10, 2026 — 06:00 PM", binId: "BIN-02", location: "Canteen",       fillAtCollection: 88, collectedBy: "Driver Meera",   type: "completed" }
-];
-
 const pageTitles = {
-    dashboard: { title: "Operations Command Center",        subtitle: "Real-time ultrasonic telemetry, IoT fleet monitoring, and dynamic collection dispatch" },
+    dashboard: { title: "Operations Command Center",        subtitle: "Real-time ultrasonic telemetry, IoT fleet monitoring, and live hardware diagnostics" },
     bins:      { title: "Smart Bins & Hardware Nodes",      subtitle: "Live ultrasonic sensor telemetry, fill diagnostics, and hardware health" },
-    route:     { title: "Intelligent Route Dispatch",        subtitle: "Autonomous priority sequencing and dynamic logistics optimization" },
-    ai:        { title: "AI Predictive & Route Workspace",   subtitle: "Neural fill velocity forecasting, overflow prediction, and dynamic TSP optimization" },
     analytics: { title: "Analytics & Telemetry",            subtitle: "Campus waste velocity metrics, fill distribution, and capacity comparison" },
-    history:   { title: "Collection Audit Log",              subtitle: "Historical collection records, response telemetry, and fleet performance" },
+    ai:        { title: "AI Intelligence & Autonomous Dispatch", subtitle: "Neural fill velocity forecasting, overflow prediction, and dynamic priority routing" },
     settings:  { title: "Platform Architecture & Config",   subtitle: "Sensor thresholds, notification rules, and Firebase cloud integration" },
 };
 
@@ -422,25 +391,130 @@ function renderAlerts() {
     }).join('');
 }
 
+/* ============================================================
+   CAMPUS DISTANCE SYSTEM & AI MULTI-OBJECTIVE ROUTE PLANNER
+   ============================================================ */
+
 /**
- * buildRouteHTML — Clean, connected node graph representation:
- * DEPOT ─── BIN ─── BIN ─── COLLECTION POINT
+ * Returns fixed campus grid coordinates for any node (0–100 scale).
+ * Central Fleet Depot: (15, 85)
+ * Central Waste Facility: (85, 85)
+ */
+function getNodePosition(node) {
+    if (node === 'DEPOT') return { x: 15, y: 85, name: 'Central Fleet Depot' };
+    if (node === 'FACILITY') return { x: 85, y: 85, name: 'Central Waste Facility' };
+    return {
+        x: Number(node.lng || node.x || 50),
+        y: Number(node.lat || node.y || 50),
+        name: node.location || node.id
+    };
+}
+
+/**
+ * Computes a realistic small fixed distance (km) between any two campus nodes.
+ * Scaling produces short hops between ~0.2 km (200m) and ~1.2 km (1200m).
+ */
+function getSegmentDistanceKm(nodeA, nodeB) {
+    const pA = getNodePosition(nodeA);
+    const pB = getNodePosition(nodeB);
+    const dx = pA.x - pB.x;
+    const dy = pA.y - pB.y;
+    const rawDist = Math.hypot(dx, dy) * 0.016;
+    return Math.max(0.18, Number(rawDist.toFixed(2)));
+}
+
+/**
+ * Multi-Objective Route Optimization Algorithm:
+ * Evaluates candidate bins balancing:
+ *   1. Overflow Urgency / Fill Percentage: Higher fill bins require urgent servicing.
+ *   2. Proximity / Travel Distance: Minimizes deadhead travel mileage from current vehicle position.
+ *
+ * Algorithm chooses the next optimal stop by maximizing:
+ *   OptimizationScore = (FillLevel * UrgencyWeight) / (DistanceKm * 45 + 10)
+ */
+function optimizeCollectionRoute(candidateBins) {
+    if (!candidateBins || candidateBins.length === 0) return { sequencedRoute: [], finalNode: 'DEPOT', totalPickupDist: 0 };
+
+    const unvisited = [...candidateBins];
+    const sequencedRoute = [];
+    let currentPos = 'DEPOT';
+    let cumulativeDist = 0;
+
+    while (unvisited.length > 0) {
+        let bestIndex = -1;
+        let bestScore = -Infinity;
+        let bestDist = 0;
+
+        for (let i = 0; i < unvisited.length; i++) {
+            const bin = unvisited[i];
+            const fill = Number(bin.fillLevel) || 0;
+            const dist = getSegmentDistanceKm(currentPos, bin);
+
+            // Urgency factor exponentially rewards critical overflow risks
+            let urgencyMultiplier = 1.0;
+            if (fill >= 90) {
+                urgencyMultiplier = 3.0; // Critical emergency priority
+            } else if (fill >= 80) {
+                urgencyMultiplier = 1.8; // High warning threshold
+            } else {
+                urgencyMultiplier = 1.1; // Routine pickup
+            }
+
+            // Balanced Multi-Objective Score: Higher fill increases score, higher distance penalizes
+            const score = (fill * urgencyMultiplier) / (dist * 45 + 10);
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestIndex = i;
+                bestDist = dist;
+            }
+        }
+
+        if (bestIndex >= 0) {
+            const chosenBin = unvisited.splice(bestIndex, 1)[0];
+            cumulativeDist += bestDist;
+            sequencedRoute.push({
+                bin: chosenBin,
+                segmentDist: bestDist,
+                cumulativeDist: Number(cumulativeDist.toFixed(2)),
+                score: Number(bestScore.toFixed(1))
+            });
+            currentPos = chosenBin;
+        }
+    }
+
+    return { sequencedRoute, finalNode: currentPos, totalPickupDist: cumulativeDist };
+}
+
+/**
+ * buildRouteHTML — Connected multi-objective node graph:
+ * Central Depot ──> [Optimized Bins (Distance + Fill%)] ──> Central Waste Facility
  */
 function buildRouteHTML() {
-    // Only bins that need collection (fill >= 50%), sorted highest fill first
-    const routeBins = bins
-        .filter(bin => Number(bin.fillLevel) >= 50)
-        .sort((a, b) => Number(b.fillLevel) - Number(a.fillLevel));
+    // Only bins that exceed collection dispatch threshold (>= 50%)
+    const eligibleBins = bins.filter(bin => Number(bin.fillLevel) >= 50);
 
-    if (routeBins.length === 0) {
+    if (eligibleBins.length === 0) {
         const emptyHtml = `
             <div class="empty-route-state">
                 <i class='bx bx-check-circle'></i>
-                <p>No bins currently exceed the collection dispatch threshold (50%). Fleet is at Central Depot on standby.</p>
+                <p>All monitored campus bins are below collection dispatch threshold (&lt;50%). Fleet is on standby at Central Depot.</p>
             </div>
         `;
-        return { html: emptyHtml, stopCount: 0, criticalCount: 0 };
+        return { html: emptyHtml, stopCount: 0, criticalCount: 0, totalDistKm: 0, etaMinutes: 0 };
     }
+
+    const { sequencedRoute, finalNode, totalPickupDist } = optimizeCollectionRoute(eligibleBins);
+
+    // Final leg from last bin to Central Waste Facility
+    const returnLegDist = getSegmentDistanceKm(finalNode, 'FACILITY');
+    const totalRouteDist = Number((totalPickupDist + returnLegDist).toFixed(2));
+
+    // Estimated travel and collection time:
+    // Driving: 20 km/h avg on campus, ~3 min service stop per bin, plus 4 min facility turnaround
+    const drivingMinutes = (totalRouteDist / 20) * 60;
+    const serviceMinutes = sequencedRoute.length * 3;
+    const totalMinutes = Math.round(drivingMinutes + serviceMinutes + 4);
 
     let html = `
         <div class="route-node depot origin">
@@ -449,14 +523,18 @@ function buildRouteHTML() {
                 <span class="spine-connector"></span>
             </div>
             <div class="route-node-content">
-                <span class="route-badge depot">START POINT</span>
+                <div class="route-node-header">
+                    <span class="route-badge depot">START POINT</span>
+                    <span class="route-dist-badge origin"><i class='bx bx-play-circle'></i> 0.00 km</span>
+                </div>
                 <div class="route-node-name">Central Fleet Depot</div>
-                <span class="route-node-sub">Collection vehicle departure &amp; logistics check</span>
+                <span class="route-node-sub">Collection vehicle departure &bull; Logistics check &amp; dispatch initialization</span>
             </div>
         </div>
     `;
 
-    routeBins.forEach((bin, index) => {
+    sequencedRoute.forEach((step, index) => {
+        const bin = step.bin;
         const status = getBinStatus(bin.fillLevel);
         const binNumber = bin.id.replace("BIN-", "");
 
@@ -468,13 +546,17 @@ function buildRouteHTML() {
                 </div>
                 <div class="route-node-content">
                     <div class="route-node-header">
-                        <span class="route-badge ${status.className}">Priority ${status.priority}</span>
+                        <div class="route-badges-row">
+                            <span class="route-badge ${status.className}">Priority ${status.priority}</span>
+                            <span class="route-dist-badge"><i class='bx bx-navigation'></i> +${step.segmentDist} km</span>
+                        </div>
                         <span class="route-node-fill ${status.className}">${bin.fillLevel}%</span>
                     </div>
                     <div class="route-node-name">Bin ${binNumber} &bull; ${bin.location}</div>
                     <div class="route-node-footer">
-                        <span><i class='bx bx-chip'></i> ${bin.sensorId || 'ESP32'}</span>
-                        <span class="action-link">View Details &rarr;</span>
+                        <span class="route-metric-crumb"><i class='bx bx-trip'></i> Cum: <strong>${step.cumulativeDist} km</strong></span>
+                        <span class="route-metric-crumb"><i class='bx bx-brain'></i> AI Score: <strong>${step.score}</strong></span>
+                        <span class="action-link">Inspect &rarr;</span>
                     </div>
                 </div>
             </div>
@@ -487,32 +569,31 @@ function buildRouteHTML() {
                 <span class="spine-icon"><i class='bx bxs-flag-checkered'></i></span>
             </div>
             <div class="route-node-content">
-                <span class="route-badge depot">COLLECTION POINT</span>
+                <div class="route-node-header">
+                    <span class="route-badge depot">COLLECTION POINT</span>
+                    <span class="route-dist-badge return"><i class='bx bx-navigation'></i> +${returnLegDist} km</span>
+                </div>
                 <div class="route-node-name">Central Waste Facility</div>
-                <span class="route-node-sub">Waste unloading, compaction &amp; depot return</span>
+                <span class="route-node-sub">Unloading &bull; High-compaction processing &bull; Total Route: ${totalRouteDist} km</span>
             </div>
         </div>
     `;
 
-    const criticalCount = routeBins.filter(b => Number(b.fillLevel) >= 90).length;
+    const criticalCount = sequencedRoute.filter(s => Number(s.bin.fillLevel) >= 90).length;
+
     return {
         html,
-        stopCount: routeBins.length,
-        criticalCount
+        stopCount: sequencedRoute.length,
+        criticalCount,
+        totalDistKm: totalRouteDist,
+        etaMinutes: totalMinutes
     };
-}
-
-function generateRoute() {
-    const el = document.getElementById('routeContainer');
-    if (!el) return;
-    const { html } = buildRouteHTML();
-    el.innerHTML = html;
 }
 
 function renderRoutePage() {
     const el = document.getElementById('routeContainerPage');
     if (!el) return;
-    const { html, stopCount, criticalCount } = buildRouteHTML();
+    const { html, stopCount, criticalCount, totalDistKm, etaMinutes } = buildRouteHTML();
     el.innerHTML = html;
 
     const stopsEl = document.getElementById('routeStops');
@@ -522,14 +603,14 @@ function renderRoutePage() {
     if (critEl) critEl.textContent = criticalCount;
 
     const etaEl = document.getElementById('routeETA');
-    if (etaEl) etaEl.textContent = stopCount === 0 ? '~0 min' : `~${stopCount * 6 + 12} min`;
+    if (etaEl) etaEl.textContent = stopCount === 0 ? '~0 min' : `~${etaMinutes} min`;
 
     const distEl = document.getElementById('routeDistance');
-    if (distEl) distEl.textContent = stopCount === 0 ? '~0.0 km' : `~${(stopCount * 0.75 + 1.2).toFixed(1)} km`;
+    if (distEl) distEl.textContent = stopCount === 0 ? '~0.0 km' : `~${totalDistKm} km`;
 }
 
 /**
- * renderMapMarkersIn — Places interactive color-coded beacons onto the live GIS campus map.
+ * renderMapMarkersIn — Places interactive color-coded beacons onto the live GIS campus radar map.
  */
 function renderMapMarkersIn(mapBgSelector) {
     const mapBg = document.querySelector(mapBgSelector);
@@ -663,31 +744,8 @@ function renderAIPage() {
         }
     }
 
-    // 2. AI Route Pipeline Stops
-    const pipelineStops = document.getElementById('aiPipelineStops');
-    if (pipelineStops) {
-        const priorityBins = bins.filter(b => Number(b.fillLevel) >= 50).sort((a, b) => Number(b.fillLevel) - Number(a.fillLevel));
-        if (priorityBins.length === 0) {
-            pipelineStops.innerHTML = `
-                <div class="pipe-node-meta empty">
-                    <strong>NO CRITICAL STOPS SCHEDULED</strong>
-                    <span>All smart bins currently operating under collection dispatch threshold</span>
-                </div>
-            `;
-        } else {
-            pipelineStops.innerHTML = priorityBins.map((bin, idx) => {
-                const status = getBinStatus(bin.fillLevel);
-                const binNum = bin.id.replace("BIN-", "");
-                return `
-                    <div class="ai-stop-chip ${status.className}">
-                        <span class="chip-step">#${idx + 1}</span>
-                        <span class="chip-id">Bin ${binNum} (${bin.location})</span>
-                        <span class="chip-fill ${status.className}">${bin.fillLevel}%</span>
-                    </div>
-                `;
-            }).join('');
-        }
-    }
+    // 2. Autonomous Dispatch Optimizer (Connected Waypoint Loop & Dispatch KPIs)
+    renderRoutePage();
 }
 
 /**
@@ -730,27 +788,6 @@ function renderAnalyticsPage() {
     if (dCriticalVal) dCriticalVal.textContent = critical;
 }
 
-/**
- * renderHistoryPage — Collection audit log.
- */
-function renderHistoryPage() {
-    const tbody = document.getElementById('historyBody');
-    if (!tbody) return;
-
-    tbody.innerHTML = collectionHistory.map(rec => {
-        const isEmergency = rec.type === 'emergency';
-        return `
-            <tr>
-                <td>${rec.date}</td>
-                <td><strong>${rec.binId}</strong></td>
-                <td>${rec.location}</td>
-                <td><strong>${rec.fillAtCollection}%</strong></td>
-                <td>${rec.collectedBy}</td>
-                <td><span class="table-status ${isEmergency ? 'emergency' : 'completed'}">${isEmergency ? 'Emergency Dispatch' : 'Routine Completed'}</span></td>
-            </tr>
-        `;
-    }).join('');
-}
 
 /**
  * renderSettingsPage — Hardware & configuration state.
@@ -777,7 +814,6 @@ function renderAll(forceCountAnimation = false) {
     updateSummary(forceCountAnimation);
     renderBins(bins);
     renderAlerts();
-    generateRoute();
     renderMapMarkers();
 
     // Re-render active page if non-dashboard
@@ -793,6 +829,8 @@ function renderAll(forceCountAnimation = false) {
 let currentPage = 'dashboard';
 
 function navigateToPage(pageName) {
+    if (pageName === 'route') pageName = 'ai';
+
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
     });
@@ -809,27 +847,16 @@ function navigateToPage(pageName) {
         }
     });
 
-    const pageInfo = pageTitles[pageName] || pageTitles.dashboard;
-    const titleEl = document.getElementById('pageTitle');
-    const subEl = document.getElementById('pageSubtitle');
-    if (titleEl) titleEl.textContent = pageInfo.title;
-    if (subEl) subEl.textContent = pageInfo.subtitle;
-
     switch (pageName) {
         case 'bins':
             renderBinsPage(bins);
             break;
-        case 'route':
-            renderRoutePage();
-            break;
-        case 'ai':
-            renderAIPage();
-            break;
         case 'analytics':
             renderAnalyticsPage();
             break;
-        case 'history':
-            renderHistoryPage();
+        case 'ai':
+        case 'route':
+            renderAIPage();
             break;
         case 'settings':
             renderSettingsPage();
