@@ -137,15 +137,121 @@ const pageTitles = {
 
 
 /* ============================================================
-   3. UTILITIES & STATUS DETERMINATION
+   2. OPERATIONAL THRESHOLDS STATE & CLASSIFICATION
    ============================================================ */
+const DEFAULT_THRESHOLDS = {
+    normal: 40,      // Safe tier: 0% to normal% (<= normal)
+    medium: 60,      // Moderate tier: > normal% and < warning%
+    warning: 80,     // Nearly Full tier: >= warning% and < critical%
+    critical: 90     // Critical tier: >= critical%
+};
+
+let thresholds = { ...DEFAULT_THRESHOLDS };
+
+function loadThresholds() {
+    try {
+        const saved = localStorage.getItem('swm-thresholds');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed && typeof parsed.critical === 'number') {
+                thresholds = {
+                    normal: Number(parsed.normal) || DEFAULT_THRESHOLDS.normal,
+                    medium: Number(parsed.medium) || DEFAULT_THRESHOLDS.medium,
+                    warning: Number(parsed.warning) || DEFAULT_THRESHOLDS.warning,
+                    critical: Number(parsed.critical) || DEFAULT_THRESHOLDS.critical
+                };
+            }
+        }
+    } catch (e) {
+        console.warn("Could not load saved thresholds:", e);
+    }
+}
+
+// Load persisted thresholds
+loadThresholds();
+
+function updateThresholdLabels() {
+    const n = thresholds.normal;
+    const m = thresholds.medium;
+    const w = thresholds.warning;
+    const c = thresholds.critical;
+
+    const medStart = n + 1;
+    const medEnd = w - 1;
+
+    // 1. Dashboard summary card KPI pills
+    const pillNormal = document.getElementById('kpiPillNormal');
+    const pillMedium = document.getElementById('kpiPillMedium');
+    const pillWarning = document.getElementById('kpiPillWarning');
+    const pillCritical = document.getElementById('kpiPillCritical');
+
+    if (pillNormal) pillNormal.innerHTML = `Safe &le; ${n}%`;
+    if (pillMedium) pillMedium.innerHTML = `Medium ${medStart}–${medEnd}%`;
+    if (pillWarning) pillWarning.innerHTML = `Warning ${w}–${c - 1}%`;
+    if (pillCritical) pillCritical.innerHTML = `Critical &ge; ${c}%`;
+
+    // 2. Map Legend
+    const legNorm = document.getElementById('legendTextNormal');
+    const legMed = document.getElementById('legendTextMedium');
+    const legWarn = document.getElementById('legendTextWarning');
+    const legCrit = document.getElementById('legendTextCritical');
+
+    if (legNorm) legNorm.innerHTML = `Normal (&le;${n}%)`;
+    if (legMed) legMed.innerHTML = `Medium (${medStart}–${medEnd}%)`;
+    if (legWarn) legWarn.innerHTML = `Warning (${w}–${c - 1}%)`;
+    if (legCrit) legCrit.innerHTML = `Critical (&ge;${c}%)`;
+
+    // 3. Smart Bins Filter Buttons
+    const btnNorm = document.getElementById('filterBtnNormal');
+    const btnMed = document.getElementById('filterBtnMedium');
+    const btnWarn = document.getElementById('filterBtnWarning');
+    const btnCrit = document.getElementById('filterBtnCritical');
+
+    if (btnNorm) btnNorm.innerHTML = `Normal (&le;${n}%)`;
+    if (btnMed) btnMed.innerHTML = `Medium (${medStart}–${medEnd}%)`;
+    if (btnWarn) btnWarn.innerHTML = `Nearly Full (${w}–${c - 1}%)`;
+    if (btnCrit) btnCrit.innerHTML = `Critical (&ge;${c}%)`;
+
+    // 4. Analytics Distribution Cards
+    const distNorm = document.getElementById('distLabelNormal');
+    const distMed = document.getElementById('distLabelMedium');
+    const distWarn = document.getElementById('distLabelWarning');
+    const distCrit = document.getElementById('distLabelCritical');
+
+    if (distNorm) distNorm.textContent = `Normal (0–${n}%)`;
+    if (distMed) distMed.textContent = `Medium (${medStart}–${medEnd}%)`;
+    if (distWarn) distWarn.textContent = `Nearly Full (${w}–${c - 1}%)`;
+    if (distCrit) distCrit.textContent = `Critical (≥${c}%)`;
+
+    // 5. Settings Inputs & Live Preview
+    const inpNorm = document.getElementById('thresholdNormal');
+    const inpMed = document.getElementById('thresholdMedium');
+    const inpWarn = document.getElementById('thresholdWarning');
+    const inpCrit = document.getElementById('thresholdCritical');
+
+    if (inpNorm && document.activeElement !== inpNorm) inpNorm.value = n;
+    if (inpMed && document.activeElement !== inpMed) inpMed.value = m;
+    if (inpWarn && document.activeElement !== inpWarn) inpWarn.value = w;
+    if (inpCrit && document.activeElement !== inpCrit) inpCrit.value = c;
+
+    const pNorm = document.getElementById('previewRangeNormal');
+    const pMed = document.getElementById('previewRangeMedium');
+    const pWarn = document.getElementById('previewRangeWarning');
+    const pCrit = document.getElementById('previewRangeCritical');
+
+    if (pNorm) pNorm.textContent = `0% – ${n}%`;
+    if (pMed) pMed.textContent = `${medStart}% – ${medEnd}%`;
+    if (pWarn) pWarn.textContent = `${w}% – ${c - 1}%`;
+    if (pCrit) pCrit.textContent = `≥ ${c}%`;
+}
+
 function getBinStatus(fillLevel) {
     const level = Number(fillLevel) || 0;
-    if (level >= 90) {
+    if (level >= thresholds.critical) {
         return { label: "Critical",    className: "critical",    priority: "HIGH",   risk: "High" };
-    } else if (level >= 80) {
+    } else if (level >= thresholds.warning) {
         return { label: "Nearly Full", className: "warning",     priority: "MEDIUM", risk: "Elevated" };
-    } else if (level >= 50) {
+    } else if (level >= thresholds.medium || level > thresholds.normal) {
         return { label: "Medium",      className: "medium",      priority: "LOW",    risk: "Moderate" };
     } else {
         return { label: "Normal",      className: "normal",      priority: "NONE",   risk: "Nominal" };
@@ -204,7 +310,7 @@ function animateCounter(elemId, targetValue, duration = 800, forceFromZero = fal
    ============================================================ */
 
 /**
- * updateSummary — Updates header stats & the 4 executive summary cards.
+ * updateSummary — Updates header stats & the 5 executive summary cards (Total, Normal, Medium, Warning, Critical).
  */
 function updateSummary(forceFromZero = false) {
     let normal = 0, medium = 0, warning = 0, critical = 0;
@@ -220,12 +326,15 @@ function updateSummary(forceFromZero = false) {
     });
 
     const totalCount = bins.length;
-    const normalCount = normal + medium;
 
     animateCounter('totalBins', totalCount, 800, forceFromZero);
-    animateCounter('normalBins', normalCount, 800, forceFromZero);
+    animateCounter('normalBins', normal, 800, forceFromZero);
+    animateCounter('mediumBins', medium, 800, forceFromZero);
     animateCounter('nearlyFullBins', warning, 800, forceFromZero);
     animateCounter('criticalBins', critical, 800, forceFromZero);
+
+    // Sync metric pill threshold texts with current active thresholds
+    updateThresholdLabels();
 
     // Header fleet tag & sensors tag
     const headerFleet = document.getElementById('headerFleetVal');
@@ -234,18 +343,18 @@ function updateSummary(forceFromZero = false) {
     const sensorsOnline = document.getElementById('sensorsOnline');
     if (sensorsOnline) sensorsOnline.textContent = `${totalCount} / ${totalCount}`;
 
-    // System Health calculation (100% minus penalty for criticals)
+    // System Health calculation (100% minus penalty for criticals and warnings)
     const healthVal = document.getElementById('headerHealthVal');
     if (healthVal) {
-        const healthPct = totalCount === 0 ? 100 : Math.max(70, Math.round(100 - (critical * 5) - (warning * 2)));
+        const healthPct = totalCount === 0 ? 100 : Math.max(70, Math.round(100 - (critical * 5) - (warning * 2) - (medium * 0.5)));
         healthVal.innerHTML = `<i class='bx bx-pulse'></i> ${healthPct}%`;
         healthVal.className = healthPct >= 90 ? 'h-metric-val health-good' : 'h-metric-val health-warn';
     }
 
-    // Radial ring
+    // Radial ring (safe normal ratio)
     const normalRing = document.getElementById('normalRingProgress');
     if (normalRing && totalCount > 0) {
-        const pct = normalCount / totalCount;
+        const pct = normal / totalCount;
         const offset = Math.max(0, Math.round(88 * (1 - pct)));
         normalRing.style.strokeDashoffset = offset;
     }
@@ -337,7 +446,7 @@ function renderAlerts() {
     if (!container) return;
 
     const alertBins = bins
-        .filter(bin => Number(bin.fillLevel) >= 80)
+        .filter(bin => Number(bin.fillLevel) >= thresholds.warning)
         .sort((a, b) => Number(b.fillLevel) - Number(a.fillLevel));
 
     const alertCountBadge = document.getElementById('alertCountBadge');
@@ -357,7 +466,7 @@ function renderAlerts() {
                 <div class="no-alerts-icon"><i class='bx bx-check-shield'></i></div>
                 <div class="no-alerts-content">
                     <h4>All Campus Bins Within Safe Limits</h4>
-                    <p>No critical fill thresholds exceeded. Realtime ultrasonic monitoring is actively scanning.</p>
+                    <p>No critical fill or capacity warning thresholds exceeded (&lt;${thresholds.warning}%). Realtime ultrasonic monitoring is actively scanning.</p>
                 </div>
             </div>
         `;
@@ -365,7 +474,7 @@ function renderAlerts() {
     }
 
     container.innerHTML = alertBins.map(bin => {
-        const isCritical = Number(bin.fillLevel) >= 90;
+        const isCritical = Number(bin.fillLevel) >= thresholds.critical;
         const binNumber = bin.id.replace("BIN-", "");
 
         return `
@@ -450,14 +559,16 @@ function optimizeCollectionRoute(candidateBins) {
             const fill = Number(bin.fillLevel) || 0;
             const dist = getSegmentDistanceKm(currentPos, bin);
 
-            // Urgency factor exponentially rewards critical overflow risks
+            // Urgency factor exponentially rewards critical overflow risks based on thresholds
             let urgencyMultiplier = 1.0;
-            if (fill >= 90) {
+            if (fill >= thresholds.critical) {
                 urgencyMultiplier = 3.0; // Critical emergency priority
-            } else if (fill >= 80) {
+            } else if (fill >= thresholds.warning) {
                 urgencyMultiplier = 1.8; // High warning threshold
+            } else if (fill >= thresholds.medium || fill > thresholds.normal) {
+                urgencyMultiplier = 1.2; // Moderate priority pickup
             } else {
-                urgencyMultiplier = 1.1; // Routine pickup
+                urgencyMultiplier = 1.0; // Routine pickup
             }
 
             // Balanced Multi-Objective Score: Higher fill increases score, higher distance penalizes
@@ -507,7 +618,9 @@ async function buildRouteHTML() {
         console.error("TSP route error:", error);
     }
 
-    const eligibleBins = bins.filter(bin => Number(bin.fillLevel) >= 50);
+    // Candidate bins for collection dispatch: bins that reached medium/collection threshold
+    const dispatchThreshold = thresholds.medium;
+    const eligibleBins = bins.filter(bin => Number(bin.fillLevel) >= dispatchThreshold);
 
     let sequencedRoute = [];
     let returnLegDist = 0.5;
@@ -543,7 +656,7 @@ async function buildRouteHTML() {
             const emptyHtml = `
                 <div class="empty-route-state">
                     <i class='bx bx-check-circle'></i>
-                    <p>All monitored campus bins are below collection dispatch threshold (&lt;50%). Fleet is on standby at Central Depot.</p>
+                    <p>All monitored campus bins are below collection dispatch threshold (&lt;${dispatchThreshold}%). Fleet is on standby at Central Depot.</p>
                 </div>
             `;
             return { html: emptyHtml, stopCount: 0, criticalCount: 0, totalDistKm: 0, etaMinutes: 0 };
@@ -649,7 +762,7 @@ async function buildRouteHTML() {
 
     const criticalCount = routePoints.filter(item => {
         const fill = Number((item.bin || item).fillLevel);
-        return fill >= 90;
+        return fill >= thresholds.critical;
     }).length;
 
     return {
@@ -662,7 +775,7 @@ async function buildRouteHTML() {
 }
 
 async function generateRoute() {
-    const el = document.getElementById('routeContainer');
+    const el = document.getElementById('routeContainer') || document.getElementById('routeContainerPage');
     if (!el) return;
 
     const { html } = await buildRouteHTML();
@@ -800,13 +913,13 @@ function renderAIPage() {
                 // Neural model heuristic projection
                 let overflowEstimate = "—";
                 let estTime = "—";
-                if (fill >= 90) {
+                if (fill >= thresholds.critical) {
                     overflowEstimate = "Immediate (At Limit)";
                     estTime = "< 1 hour";
-                } else if (fill >= 80) {
+                } else if (fill >= thresholds.warning) {
                     overflowEstimate = "Today (Evening)";
                     estTime = "~3 - 4 hours";
-                } else if (fill >= 50) {
+                } else if (fill >= thresholds.medium || fill > thresholds.normal) {
                     overflowEstimate = "Tomorrow (Morning)";
                     estTime = "~14 - 18 hours";
                 } else {
@@ -883,6 +996,9 @@ function renderSettingsPage() {
 
     const label = document.getElementById('currentThemeLabel');
     if (label) label.textContent = isDark ? 'Dark' : 'Light';
+
+    // Populate active threshold inputs & breakdown
+    updateThresholdLabels();
 }
 
 function updateDateTime() {
@@ -961,6 +1077,9 @@ function getFilteredBins(filterType, searchText) {
     if (filterType !== 'all') {
         filtered = filtered.filter(bin => {
             const status = getBinStatus(bin.fillLevel);
+            if (filterType === 'nearly-full' || filterType === 'warning') {
+                return status.className === 'warning';
+            }
             return status.className === filterType;
         });
     }
@@ -1041,8 +1160,101 @@ function closeModal() {
     if (overlay) overlay.classList.remove('active');
 }
 
+function showThresholdFeedback(message, type = 'success') {
+    const fb = document.getElementById('thresholdFeedback');
+    if (!fb) return;
+    fb.className = `threshold-feedback-msg ${type}`;
+    fb.innerHTML = type === 'success' ? `<i class='bx bx-check-circle'></i> ${message}` : `<i class='bx bx-error-circle'></i> ${message}`;
+    fb.style.display = 'flex';
+    setTimeout(() => {
+        if (fb) fb.style.display = 'none';
+    }, 4500);
+}
+
+function updateSettingsPreviewFromInputs() {
+    const inpNorm = document.getElementById('thresholdNormal');
+    const inpMed = document.getElementById('thresholdMedium');
+    const inpWarn = document.getElementById('thresholdWarning');
+    const inpCrit = document.getElementById('thresholdCritical');
+
+    const n = Math.max(1, Math.min(99, parseInt(inpNorm?.value, 10) || thresholds.normal));
+    const m = Math.max(1, Math.min(99, parseInt(inpMed?.value, 10) || thresholds.medium));
+    const w = Math.max(1, Math.min(99, parseInt(inpWarn?.value, 10) || thresholds.warning));
+    const c = Math.max(1, Math.min(100, parseInt(inpCrit?.value, 10) || thresholds.critical));
+
+    const pNorm = document.getElementById('previewRangeNormal');
+    const pMed = document.getElementById('previewRangeMedium');
+    const pWarn = document.getElementById('previewRangeWarning');
+    const pCrit = document.getElementById('previewRangeCritical');
+
+    const medStart = n + 1;
+    const medEnd = w - 1;
+
+    if (pNorm) pNorm.textContent = `0% – ${n}%`;
+    if (pMed) pMed.textContent = `${medStart}% – ${medEnd}%`;
+    if (pWarn) pWarn.textContent = `${w}% – ${c - 1}%`;
+    if (pCrit) pCrit.textContent = `≥ ${c}%`;
+}
+
 function saveThresholds() {
-    alert('Threshold preferences updated! (In production, thresholds sync directly with ESP32 threshold triggers in Firebase.)');
+    const inputNormal = document.getElementById('thresholdNormal');
+    const inputMedium = document.getElementById('thresholdMedium');
+    const inputWarning = document.getElementById('thresholdWarning');
+    const inputCritical = document.getElementById('thresholdCritical');
+
+    const n = parseInt(inputNormal?.value, 10);
+    const m = parseInt(inputMedium?.value, 10);
+    const w = parseInt(inputWarning?.value, 10);
+    const c = parseInt(inputCritical?.value, 10);
+
+    if (isNaN(n) || isNaN(m) || isNaN(w) || isNaN(c)) {
+        showThresholdFeedback("All 4 thresholds must be valid numbers.", "error");
+        return;
+    }
+
+    if (n < 1 || n > 99 || m < 1 || m > 99 || w < 1 || w > 99 || c < 1 || c > 100) {
+        showThresholdFeedback("Threshold values must be between 1% and 100%.", "error");
+        return;
+    }
+
+    if (n >= w || m >= w || w >= c) {
+        showThresholdFeedback("Thresholds must follow logical order: Normal < Warning < Critical.", "error");
+        return;
+    }
+
+    thresholds = { normal: n, medium: m, warning: w, critical: c };
+
+    try {
+        localStorage.setItem('swm-thresholds', JSON.stringify(thresholds));
+    } catch (e) {
+        console.warn("Could not persist thresholds to localStorage:", e);
+    }
+
+    // Update dynamic threshold labels across all pages
+    updateThresholdLabels();
+
+    // Re-render Dashboard, Bins, Alerts, and Analytics
+    renderAll(true);
+
+    // Re-calculate Route Optimization
+    generateRoute();
+    renderRoutePage();
+
+    showThresholdFeedback("Threshold preferences updated! Dashboard, Smart Bins, and Route Optimization have synced.", "success");
+}
+
+function resetThresholdsDefault() {
+    thresholds = { ...DEFAULT_THRESHOLDS };
+    try {
+        localStorage.removeItem('swm-thresholds');
+    } catch (e) {}
+
+    updateThresholdLabels();
+    renderAll(true);
+    generateRoute();
+    renderRoutePage();
+
+    showThresholdFeedback("Thresholds reset to defaults (Normal: 40%, Medium: 60%, Warning: 80%, Critical: 90%).", "success");
 }
 
 function updateThemeUI(isDark) {
@@ -1097,7 +1309,16 @@ function initTheme() {
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     updateFirebaseSyncUI('awaiting');
+    updateThresholdLabels();
     renderAll(true);
+
+    // Live preview update as user edits threshold inputs
+    ['thresholdNormal', 'thresholdMedium', 'thresholdWarning', 'thresholdCritical'].forEach(id => {
+        const inp = document.getElementById(id);
+        if (inp) {
+            inp.addEventListener('input', updateSettingsPreviewFromInputs);
+        }
+    });
 
     // Search: Bins page
     const searchBinsInput = document.getElementById('searchInputBins');

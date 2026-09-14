@@ -184,7 +184,7 @@
                 <div class="card summary-card normal">
                     <div class="card-top-row">
                         <div class="card-icon"><i class='bx bxs-check-circle'></i></div>
-                        <span class="card-metric-pill normal">Safe &lt; 50%</span>
+                        <span class="card-metric-pill normal" id="kpiPillNormal">Safe &le; 40%</span>
                     </div>
                     <div class="card-info">
                         <div class="stat-number-row">
@@ -200,10 +200,36 @@
                     </div>
                 </div>
 
+                <div class="card summary-card medium">
+                    <div class="card-top-row">
+                        <div class="card-icon"><i class='bx bxs-adjust-alt'></i></div>
+                        <span class="card-metric-pill medium" id="kpiPillMedium">Medium 41–79%</span>
+                    </div>
+                    <div class="card-info">
+                        <div class="stat-number-row">
+                            <h3 id="mediumBins">0</h3>
+                            <div class="stat-sparkline" title="Moderate fill velocity">
+                                <svg width="50" height="24" viewBox="0 0 50 24" fill="none">
+                                    <defs>
+                                        <linearGradient id="sparkMedium" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.35"/>
+                                            <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M2 18 L14 16 L24 15 L36 12 L48 9" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 18 L14 16 L24 15 L36 12 L48 9 L48 24 L2 24 Z" fill="url(#sparkMedium)"/>
+                                    <circle cx="48" cy="9" r="2.5" fill="#38BDF8"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <p>Medium Fill Level</p>
+                    </div>
+                </div>
+
                 <div class="card summary-card warning">
                     <div class="card-top-row">
                         <div class="card-icon"><i class='bx bxs-error'></i></div>
-                        <span class="card-metric-pill warning">Warning 80–89%</span>
+                        <span class="card-metric-pill warning" id="kpiPillWarning">Warning 80–89%</span>
                     </div>
                     <div class="card-info">
                         <div class="stat-number-row">
@@ -229,7 +255,7 @@
                 <div class="card summary-card critical">
                     <div class="card-top-row">
                         <div class="card-icon"><i class='bx bxs-error-circle'></i></div>
-                        <span class="card-metric-pill critical">Critical &ge; 90%</span>
+                        <span class="card-metric-pill critical" id="kpiPillCritical">Critical &ge; 90%</span>
                     </div>
                     <div class="card-info">
                         <div class="stat-number-row">
@@ -339,10 +365,10 @@
                         <!-- Bottom Map Legend -->
                         <div class="map-footer-controls">
                             <div class="map-legend">
-                                <span class="legend-item"><span class="legend-dot normal"></span> Normal (&lt;50%)</span>
-                                <span class="legend-item"><span class="legend-dot medium"></span> Medium (50–79%)</span>
-                                <span class="legend-item"><span class="legend-dot warning"></span> Warning (80–89%)</span>
-                                <span class="legend-item"><span class="legend-dot critical"></span> Critical (&ge;90%)</span>
+                                <span class="legend-item" id="legendItemNormal"><span class="legend-dot normal"></span> <span id="legendTextNormal">Normal (&le;40%)</span></span>
+                                <span class="legend-item" id="legendItemMedium"><span class="legend-dot medium"></span> <span id="legendTextMedium">Medium (41–79%)</span></span>
+                                <span class="legend-item" id="legendItemWarning"><span class="legend-dot warning"></span> <span id="legendTextWarning">Warning (80–89%)</span></span>
+                                <span class="legend-item" id="legendItemCritical"><span class="legend-dot critical"></span> <span id="legendTextCritical">Critical (&ge;90%)</span></span>
                             </div>
                             <span class="map-status-footnote"><i class='bx bx-broadcast'></i> Markers live-linked to Firebase coordinates</span>
                         </div>
@@ -397,11 +423,11 @@
                         <input type="text" id="searchInputBins" placeholder="Search by Bin ID, location, or sensor ID...">
                     </div>
                     <div class="filter-buttons" id="filterButtonsBins">
-                        <button class="filter-btn active" data-filter="all">All Bins</button>
-                        <button class="filter-btn" data-filter="normal">Normal (&lt;50%)</button>
-                        <button class="filter-btn" data-filter="medium">Medium (50–79%)</button>
-                        <button class="filter-btn" data-filter="nearly-full">Nearly Full (80–89%)</button>
-                        <button class="filter-btn" data-filter="critical">Critical (&ge;90%)</button>
+                        <button class="filter-btn active" data-filter="all" id="filterBtnAll">All Bins</button>
+                        <button class="filter-btn" data-filter="normal" id="filterBtnNormal">Normal (&le;40%)</button>
+                        <button class="filter-btn" data-filter="medium" id="filterBtnMedium">Medium (41–79%)</button>
+                        <button class="filter-btn" data-filter="warning" id="filterBtnWarning">Nearly Full (80–89%)</button>
+                        <button class="filter-btn" data-filter="critical" id="filterBtnCritical">Critical (&ge;90%)</button>
                     </div>
                 </div>
                 <div class="bins-page-summary">
@@ -448,28 +474,28 @@
                         <div class="dist-bar-bg">
                             <div class="dist-bar" id="distNormal" style="background:var(--accent-teal)"></div>
                         </div>
-                        <span class="dist-label">Normal (0–49%)</span>
+                        <span class="dist-label" id="distLabelNormal">Normal (0–40%)</span>
                         <strong class="dist-value" id="distNormalVal">0</strong>
                     </div>
                     <div class="distribution-card">
                         <div class="dist-bar-bg">
                             <div class="dist-bar" id="distMedium" style="background:var(--status-medium)"></div>
                         </div>
-                        <span class="dist-label">Medium (50–79%)</span>
+                        <span class="dist-label" id="distLabelMedium">Medium (41–79%)</span>
                         <strong class="dist-value" id="distMediumVal">0</strong>
                     </div>
                     <div class="distribution-card">
                         <div class="dist-bar-bg">
                             <div class="dist-bar" id="distWarning" style="background:var(--status-warning)"></div>
                         </div>
-                        <span class="dist-label">Nearly Full (80–89%)</span>
+                        <span class="dist-label" id="distLabelWarning">Nearly Full (80–89%)</span>
                         <strong class="dist-value" id="distWarningVal">0</strong>
                     </div>
                     <div class="distribution-card">
                         <div class="dist-bar-bg">
                             <div class="dist-bar" id="distCritical" style="background:var(--status-critical)"></div>
                         </div>
-                        <span class="dist-label">Critical (&ge;90%)</span>
+                        <span class="dist-label" id="distLabelCritical">Critical (&ge;90%)</span>
                         <strong class="dist-value" id="distCriticalVal">0</strong>
                     </div>
                 </div>
@@ -631,29 +657,85 @@
                     <!-- Thresholds -->
                     <div class="settings-card">
                         <h3><i class='bx bxs-slider-alt'></i> Fill Level Thresholds</h3>
-                        <p class="settings-desc">Configure when bins are classified into each status level.</p>
+                        <p class="settings-desc">Configure the ultrasonic fill level thresholds for all 4 operational tiers. Changes sync across Dashboard, Smart Bins, and Route Optimization.</p>
+                        
                         <div class="settings-row">
-                            <label>Medium threshold</label>
+                            <div class="settings-row-info">
+                                <label><span class="tier-indicator normal"></span> Normal threshold (Safe limit)</label>
+                                <span class="settings-sublabel">Bins up to this percentage are considered safe</span>
+                            </div>
                             <div class="settings-input-group">
-                                <input type="number" id="thresholdMedium" value="50" min="1" max="100">
+                                <input type="number" id="thresholdNormal" value="40" min="1" max="99">
                                 <span>%</span>
                             </div>
                         </div>
+
                         <div class="settings-row">
-                            <label>Nearly Full threshold</label>
+                            <div class="settings-row-info">
+                                <label><span class="tier-indicator medium"></span> Medium threshold</label>
+                                <span class="settings-sublabel">Bins reaching moderate fill requiring monitoring</span>
+                            </div>
                             <div class="settings-input-group">
-                                <input type="number" id="thresholdWarning" value="80" min="1" max="100">
+                                <input type="number" id="thresholdMedium" value="60" min="1" max="99">
                                 <span>%</span>
                             </div>
                         </div>
+
                         <div class="settings-row">
-                            <label>Critical threshold</label>
+                            <div class="settings-row-info">
+                                <label><span class="tier-indicator warning"></span> Nearly Full threshold</label>
+                                <span class="settings-sublabel">Bins nearing capacity requiring collection scheduling</span>
+                            </div>
+                            <div class="settings-input-group">
+                                <input type="number" id="thresholdWarning" value="80" min="1" max="99">
+                                <span>%</span>
+                            </div>
+                        </div>
+
+                        <div class="settings-row">
+                            <div class="settings-row-info">
+                                <label><span class="tier-indicator critical"></span> Critical threshold</label>
+                                <span class="settings-sublabel">Urgent overflow alert & high-priority dispatch trigger</span>
+                            </div>
                             <div class="settings-input-group">
                                 <input type="number" id="thresholdCritical" value="90" min="1" max="100">
                                 <span>%</span>
                             </div>
                         </div>
-                        <button class="btn-action-primary" onclick="saveThresholds()"><i class='bx bx-save'></i> Save Thresholds</button>
+
+                        <!-- Live Range Preview -->
+                        <div class="threshold-live-preview">
+                            <span class="preview-title"><i class='bx bx-check-circle'></i> Active Tier Classification Breakdown:</span>
+                            <div class="threshold-preview-grid">
+                                <div class="threshold-tier-preview normal">
+                                    <span class="preview-dot normal"></span>
+                                    <span class="preview-name">Normal</span>
+                                    <strong id="previewRangeNormal">0% – 40%</strong>
+                                </div>
+                                <div class="threshold-tier-preview medium">
+                                    <span class="preview-dot medium"></span>
+                                    <span class="preview-name">Medium</span>
+                                    <strong id="previewRangeMedium">41% – 79%</strong>
+                                </div>
+                                <div class="threshold-tier-preview warning">
+                                    <span class="preview-dot warning"></span>
+                                    <span class="preview-name">Nearly Full</span>
+                                    <strong id="previewRangeWarning">80% – 89%</strong>
+                                </div>
+                                <div class="threshold-tier-preview critical">
+                                    <span class="preview-dot critical"></span>
+                                    <span class="preview-name">Critical</span>
+                                    <strong id="previewRangeCritical">&ge; 90%</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="thresholdFeedback" class="threshold-feedback-msg" style="display:none;"></div>
+
+                        <div class="settings-action-row">
+                            <button class="btn-action-primary" id="btnSaveThresholds" onclick="saveThresholds()"><i class='bx bx-save'></i> Save Thresholds</button>
+                            <button class="btn-action-secondary" type="button" onclick="resetThresholdsDefault()"><i class='bx bx-reset'></i> Reset Defaults</button>
+                        </div>
                     </div>
 
                     <!-- Notifications -->
