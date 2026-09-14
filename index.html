@@ -396,37 +396,20 @@
                 </div>
             </section>
 
-            <!-- Compact Telemetry Overview & Chart Preview -->
-            <div class="dashboard-bottom-grid">
-                <!-- Compact Bin Telemetry Grid Preview -->
-                <section class="section compact-bins-section">
-                    <div class="section-header-bar">
-                        <div class="header-bar-left">
-                            <h2 class="section-title"><i class='bx bxs-grid-alt'></i> Hardware Nodes Overview</h2>
-                            <span class="section-subtitle">Real-time status of all field-deployed IoT bin sensors</span>
-                        </div>
-                        <button class="btn-ghost-sm" onclick="navigateToPage('bins')">View All Bins &rarr;</button>
+            <!-- Compact Telemetry Overview -->
+            <section class="section compact-bins-section">
+                <div class="section-header-bar">
+                    <div class="header-bar-left">
+                        <h2 class="section-title"><i class='bx bxs-grid-alt'></i> Hardware Nodes Overview</h2>
+                        <span class="section-subtitle">Real-time status of all field-deployed IoT bin sensors</span>
                     </div>
-                    <!-- Bin Cards Mini Grid -->
-                    <div class="bins-grid compact-grid" id="binsGrid">
-                        <!-- Populated by JS -->
-                    </div>
-                </section>
-
-                <!-- Analytics Fill Level Chart Preview -->
-                <section class="section compact-chart-section">
-                    <div class="section-header-bar">
-                        <div class="header-bar-left">
-                            <h2 class="section-title"><i class='bx bxs-bar-chart-alt-2'></i> Fill Level Distribution</h2>
-                            <span class="section-subtitle">Real-time capacity comparison</span>
-                        </div>
-                        <button class="btn-ghost-sm" onclick="navigateToPage('analytics')">View Analytics &rarr;</button>
-                    </div>
-                    <div class="chart-container" id="chartContainer">
-                        <!-- Populated by JS -->
-                    </div>
-                </section>
-            </div>
+                    <button class="btn-ghost-sm" onclick="navigateToPage('bins')">View All Bins &rarr;</button>
+                </div>
+                <!-- Bin Cards Mini Grid -->
+                <div class="bins-grid compact-grid" id="binsGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
 
             <!-- ========================================================
                  BOTTOM SYSTEM STATUS PANELS:

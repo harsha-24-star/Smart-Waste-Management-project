@@ -612,9 +612,6 @@ function renderChartIn(containerId) {
     }).join('');
 }
 
-function renderChart() {
-    renderChartIn('chartContainer');
-}
 
 /**
  * renderAIPage — Renders the dedicated AI Workspace with Overflow Forecasting and Route Optimization.
@@ -782,7 +779,6 @@ function renderAll(forceCountAnimation = false) {
     renderAlerts();
     generateRoute();
     renderMapMarkers();
-    renderChart();
 
     // Re-render active page if non-dashboard
     if (currentPage !== 'dashboard') {
