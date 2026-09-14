@@ -426,79 +426,202 @@ function renderAlerts() {
  * buildRouteHTML — Clean, connected node graph representation:
  * DEPOT ─── BIN ─── BIN ─── COLLECTION POINT
  */
-function buildRouteHTML() {
-    // Only bins that need collection (fill >= 50%), sorted highest fill first
-    const routeBins = bins
-        .filter(bin => Number(bin.fillLevel) >= 50)
-        .sort((a, b) => Number(b.fillLevel) - Number(a.fillLevel));
+async function buildRouteHTML() {
 
-    if (routeBins.length === 0) {
+    // Get the optimized TSP route from the backend
+    let routeData;
+
+    try {
+        const response = await fetch(
+            "https://smart-waste-backend-twjs.onrender.com/plan-route"
+        );
+
+        if (!response.ok) {
+            throw new Error("Route planning request failed");
+        }
+
+        routeData = await response.json();
+
+    } catch (error) {
+
+        console.error("TSP route error:", error);
+
+        const errorHtml = `
+            <div class="empty-route-state">
+                <i class='bx bx-error-circle'></i>
+                <p>Unable to generate the optimized collection route.</p>
+            </div>
+        `;
+
+        return {
+            html: errorHtml,
+            stopCount: 0,
+            criticalCount: 0
+        };
+    }
+
+
+    // No bins require collection
+    if (!routeData.route || routeData.route.length <= 2) {
+
         const emptyHtml = `
             <div class="empty-route-state">
                 <i class='bx bx-check-circle'></i>
-                <p>No bins currently exceed the collection dispatch threshold (50%). Fleet is at Central Depot on standby.</p>
+                <p>No bins currently require collection. Fleet is at Central Depot on standby.</p>
             </div>
         `;
-        return { html: emptyHtml, stopCount: 0, criticalCount: 0 };
+
+        return {
+            html: emptyHtml,
+            stopCount: 0,
+            criticalCount: 0
+        };
     }
+
+
+    // --------------------------------------------------
+    // STARTING DEPOT
+    // --------------------------------------------------
 
     let html = `
         <div class="route-node depot origin">
             <div class="route-node-spine">
-                <span class="spine-icon"><i class='bx bxs-institution'></i></span>
+                <span class="spine-icon">
+                    <i class='bx bxs-institution'></i>
+                </span>
                 <span class="spine-connector"></span>
             </div>
+
             <div class="route-node-content">
                 <span class="route-badge depot">START POINT</span>
-                <div class="route-node-name">Central Fleet Depot</div>
-                <span class="route-node-sub">Collection vehicle departure &amp; logistics check</span>
+
+                <div class="route-node-name">
+                    Central Fleet Depot
+                </div>
+
+                <span class="route-node-sub">
+                    Collection vehicle departure &amp; logistics check
+                </span>
             </div>
         </div>
     `;
 
+
+    // --------------------------------------------------
+    // TSP BIN ROUTE
+    // --------------------------------------------------
+
+    const routeBins = routeData.route.filter(
+        point => point.type === "bin"
+    );
+
+
     routeBins.forEach((bin, index) => {
+
         const status = getBinStatus(bin.fillLevel);
+
         const binNumber = bin.id.replace("BIN-", "");
 
         html += `
-            <div class="route-node ${status.className}" onclick="showBinDetails('${bin.id}')">
+            <div class="route-node ${status.className}"
+                 onclick="showBinDetails('${bin.id}')">
+
                 <div class="route-node-spine">
-                    <span class="spine-icon ${status.className}">${index + 1}</span>
+
+                    <span class="spine-icon ${status.className}">
+                        ${index + 1}
+                    </span>
+
                     <span class="spine-connector"></span>
+
                 </div>
+
                 <div class="route-node-content">
+
                     <div class="route-node-header">
-                        <span class="route-badge ${status.className}">Priority ${status.priority}</span>
-                        <span class="route-node-fill ${status.className}">${bin.fillLevel}%</span>
+
+                        <span class="route-badge ${status.className}">
+                            Priority ${status.priority}
+                        </span>
+
+                        <span class="route-node-fill ${status.className}">
+                            ${bin.fillLevel}%
+                        </span>
+
                     </div>
-                    <div class="route-node-name">Bin ${binNumber} &bull; ${bin.location}</div>
+
+                    <div class="route-node-name">
+                        Bin ${binNumber} &bull; ${bin.location}
+                    </div>
+
                     <div class="route-node-footer">
-                        <span><i class='bx bx-chip'></i> ${bin.sensorId || 'ESP32'}</span>
-                        <span class="action-link">View Details &rarr;</span>
+
+                        <span>
+                            <i class='bx bx-chip'></i>
+                            ${bin.sensorId || 'ESP32'}
+                        </span>
+
+                        <span class="action-link">
+                            View Details &rarr;
+                        </span>
+
                     </div>
+
                 </div>
+
             </div>
         `;
     });
 
+
+    // --------------------------------------------------
+    // FINAL COLLECTION FACILITY
+    // --------------------------------------------------
+
     html += `
         <div class="route-node depot destination">
+
             <div class="route-node-spine">
-                <span class="spine-icon"><i class='bx bxs-flag-checkered'></i></span>
+
+                <span class="spine-icon">
+                    <i class='bx bxs-flag-checkered'></i>
+                </span>
+
             </div>
+
             <div class="route-node-content">
-                <span class="route-badge depot">COLLECTION POINT</span>
-                <div class="route-node-name">Central Waste Facility</div>
-                <span class="route-node-sub">Waste unloading, compaction &amp; depot return</span>
+
+                <span class="route-badge depot">
+                    COLLECTION POINT
+                </span>
+
+                <div class="route-node-name">
+                    Central Waste Facility
+                </div>
+
+                <span class="route-node-sub">
+                    Waste unloading, compaction &amp; depot return
+                </span>
+
             </div>
+
         </div>
     `;
 
-    const criticalCount = routeBins.filter(b => Number(b.fillLevel) >= 90).length;
+
+    // --------------------------------------------------
+    // COUNTS
+    // --------------------------------------------------
+
+    const criticalCount = routeBins.filter(
+        bin => Number(bin.fillLevel) >= 90
+    ).length;
+
+
     return {
-        html,
+        html: html,
         stopCount: routeBins.length,
-        criticalCount
+        criticalCount: criticalCount
     };
 }
 
