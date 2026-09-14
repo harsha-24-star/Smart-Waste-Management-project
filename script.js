@@ -490,127 +490,202 @@ function optimizeCollectionRoute(candidateBins) {
  * buildRouteHTML — Connected multi-objective node graph:
  * Central Depot ──> [Optimized Bins (Distance + Fill%)] ──> Central Waste Facility
  */
-function buildRouteHTML() {
-    // Only bins that exceed collection dispatch threshold (>= 50%)
-    const eligibleBins = bins.filter(bin => Number(bin.fillLevel) >= 50);
+async function buildRouteHTML() {
+    let routeData;
 
-    if (eligibleBins.length === 0) {
-        const emptyHtml = `
-            <div class="empty-route-state">
-                <i class='bx bx-check-circle'></i>
-                <p>All monitored campus bins are below collection dispatch threshold (&lt;50%). Fleet is on standby at Central Depot.</p>
-            </div>
-        `;
-        return { html: emptyHtml, stopCount: 0, criticalCount: 0, totalDistKm: 0, etaMinutes: 0 };
+    try {
+        const response = await fetch(
+            "https://smart-waste-backend-twjs.onrender.com/plan-route"
+        );
+
+        if (!response.ok) {
+            throw new Error("Route planning request failed");
+        }
+
+        routeData = await response.json();
+    } catch (error) {
+        console.error("TSP route error:", error);
     }
 
-    const { sequencedRoute, finalNode, totalPickupDist } = optimizeCollectionRoute(eligibleBins);
+    const eligibleBins = bins.filter(bin => Number(bin.fillLevel) >= 50);
 
-    // Final leg from last bin to Central Waste Facility
-    const returnLegDist = getSegmentDistanceKm(finalNode, 'FACILITY');
-    const totalRouteDist = Number((totalPickupDist + returnLegDist).toFixed(2));
+    if (!routeData || !routeData.route || routeData.route.length <= 2) {
+        if (eligibleBins.length === 0) {
+            const emptyHtml = `
+                <div class="empty-route-state">
+                    <i class='bx bx-check-circle'></i>
+                    <p>All monitored campus bins are below collection dispatch threshold (&lt;50%). Fleet is on standby at Central Depot.</p>
+                </div>
+            `;
+            return { html: emptyHtml, stopCount: 0, criticalCount: 0, totalDistKm: 0, etaMinutes: 0 };
+        }
 
-    // Estimated travel and collection time:
-    // Driving: 20 km/h avg on campus, ~3 min service stop per bin, plus 4 min facility turnaround
-    const drivingMinutes = (totalRouteDist / 20) * 60;
-    const serviceMinutes = sequencedRoute.length * 3;
-    const totalMinutes = Math.round(drivingMinutes + serviceMinutes + 4);
+        const { sequencedRoute, finalNode, totalPickupDist } = optimizeCollectionRoute(eligibleBins);
+        const returnLegDist = getSegmentDistanceKm(finalNode, 'FACILITY');
+        const totalRouteDist = Number((totalPickupDist + returnLegDist).toFixed(2));
+        const drivingMinutes = (totalRouteDist / 20) * 60;
+        const serviceMinutes = sequencedRoute.length * 3;
+        const totalMinutes = Math.round(drivingMinutes + serviceMinutes + 4);
+    }
+
+    let html = `
 
     let html = `
         <div class="route-node depot origin">
             <div class="route-node-spine">
-                <span class="spine-icon"><i class='bx bxs-institution'></i></span>
+                <span class="spine-icon">
+                    <i class='bx bxs-institution'></i>
+                </span>
                 <span class="spine-connector"></span>
             </div>
+
             <div class="route-node-content">
-                <div class="route-node-header">
-                    <span class="route-badge depot">START POINT</span>
-                    <span class="route-dist-badge origin"><i class='bx bx-play-circle'></i> 0.00 km</span>
+                <span class="route-badge depot">START POINT</span>
+                <span class="route-dist-badge origin"><i class='bx bx-play-circle'></i> 0.00 km</span>
+
+                <div class="route-node-name">
+                    Central Fleet Depot
                 </div>
-                <div class="route-node-name">Central Fleet Depot</div>
-                <span class="route-node-sub">Collection vehicle departure &bull; Logistics check &amp; dispatch initialization</span>
+
+                <span class="route-node-sub">
+                    Collection vehicle departure &amp; logistics check &amp; dispatch initialization
+                </span>
             </div>
         </div>
     `;
 
-    sequencedRoute.forEach((step, index) => {
-        const bin = step.bin;
+    const routePoints = Array.isArray(routeData?.route)
+        ? routeData.route.filter(point => point.type === "bin")
+        : sequencedRoute;
+
+    routePoints.forEach((step, index) => {
+        const bin = step.bin || step;
         const status = getBinStatus(bin.fillLevel);
+
         const binNumber = bin.id.replace("BIN-", "");
 
         html += `
-            <div class="route-node ${status.className}" onclick="showBinDetails('${bin.id}')">
+            <div class="route-node ${status.className}"
+                 onclick="showBinDetails('${bin.id}')">
+
                 <div class="route-node-spine">
-                    <span class="spine-icon ${status.className}">${index + 1}</span>
+
+                    <span class="spine-icon ${status.className}">
+                        ${index + 1}
+                    </span>
+
                     <span class="spine-connector"></span>
+
                 </div>
+
                 <div class="route-node-content">
+
                     <div class="route-node-header">
                         <div class="route-badges-row">
                             <span class="route-badge ${status.className}">Priority ${status.priority}</span>
-                            <span class="route-dist-badge"><i class='bx bx-navigation'></i> +${step.segmentDist} km</span>
+                            <span class="route-dist-badge"><i class='bx bx-navigation'></i> +${step.segmentDist ?? 0} km</span>
                         </div>
                         <span class="route-node-fill ${status.className}">${bin.fillLevel}%</span>
                     </div>
-                    <div class="route-node-name">Bin ${binNumber} &bull; ${bin.location}</div>
-                    <div class="route-node-footer">
-                        <span class="route-metric-crumb"><i class='bx bx-trip'></i> Cum: <strong>${step.cumulativeDist} km</strong></span>
-                        <span class="route-metric-crumb"><i class='bx bx-brain'></i> AI Score: <strong>${step.score}</strong></span>
-                        <span class="action-link">Inspect &rarr;</span>
+
+                    <div class="route-node-name">
+                        Bin ${binNumber} &bull; ${bin.location}
                     </div>
+
+                    <div class="route-node-footer">
+                        <span class="route-metric-crumb"><i class='bx bx-trip'></i> Cum: <strong>${step.cumulativeDist ?? '0.00'} km</strong></span>
+                        <span class="route-metric-crumb"><i class='bx bx-brain'></i> AI Score: <strong>${step.score ?? '—'}</strong></span>
+                        <span><i class='bx bx-chip'></i> ${bin.sensorId || 'ESP32'}</span>
+                        <span class="action-link">View Details &rarr;</span>
+                    </div>
+
                 </div>
+
             </div>
         `;
     });
 
+
+    // --------------------------------------------------
+    // FINAL COLLECTION FACILITY
+    // --------------------------------------------------
+
     html += `
         <div class="route-node depot destination">
+
             <div class="route-node-spine">
-                <span class="spine-icon"><i class='bx bxs-flag-checkered'></i></span>
+
+                <span class="spine-icon">
+                    <i class='bx bxs-flag-checkered'></i>
+                </span>
+
             </div>
+
             <div class="route-node-content">
-                <div class="route-node-header">
-                    <span class="route-badge depot">COLLECTION POINT</span>
-                    <span class="route-dist-badge return"><i class='bx bx-navigation'></i> +${returnLegDist} km</span>
+                <span class="route-badge depot">COLLECTION POINT</span>
+                <span class="route-dist-badge return"><i class='bx bx-navigation'></i> +${returnLegDist ?? 0} km</span>
+
+                <div class="route-node-name">
+                    Central Waste Facility
                 </div>
-                <div class="route-node-name">Central Waste Facility</div>
-                <span class="route-node-sub">Unloading &bull; High-compaction processing &bull; Total Route: ${totalRouteDist} km</span>
+
+                <span class="route-node-sub">
+                    Waste unloading, compaction &amp; depot return &amp; total route: ${totalRouteDist ?? 0} km
+                </span>
             </div>
+
         </div>
     `;
 
-    const criticalCount = sequencedRoute.filter(s => Number(s.bin.fillLevel) >= 90).length;
+    const criticalCount = (Array.isArray(routeData?.route) ? routeData.route.filter(point => point.type === "bin") : sequencedRoute || []).filter(item => {
+        const fill = Number((item.bin || item).fillLevel);
+        return fill >= 90;
+    }).length;
 
     return {
         html,
-        stopCount: sequencedRoute.length,
+        stopCount: (Array.isArray(routeData?.route) ? routeData.route.filter(point => point.type === "bin") : sequencedRoute || []).length,
         criticalCount,
-        totalDistKm: totalRouteDist,
-        etaMinutes: totalMinutes
+        totalDistKm: typeof totalRouteDist === "number" ? totalRouteDist : 0,
+        etaMinutes: typeof totalMinutes === "number" ? totalMinutes : 0
     };
 }
 
-function renderRoutePage() {
+async function generateRoute() {
+    const el = document.getElementById('routeContainer');
+    if (!el) return;
+
+    const { html } = await buildRouteHTML();
+
+    el.innerHTML = html;
+}
+
+async function renderRoutePage() {
     const el = document.getElementById('routeContainerPage');
     if (!el) return;
-    const { html, stopCount, criticalCount, totalDistKm, etaMinutes } = buildRouteHTML();
+
+    const { html, stopCount, criticalCount, totalDistKm, etaMinutes } = await buildRouteHTML();
     el.innerHTML = html;
 
     const stopsEl = document.getElementById('routeStops');
-    if (stopsEl) stopsEl.textContent = stopCount;
+    if (stopsEl) {
+        stopsEl.textContent = stopCount;
+    }
 
     const critEl = document.getElementById('routeCritical');
-    if (critEl) critEl.textContent = criticalCount;
+    if (critEl) {
+        critEl.textContent = criticalCount;
+    }
 
     const etaEl = document.getElementById('routeETA');
-    if (etaEl) etaEl.textContent = stopCount === 0 ? '~0 min' : `~${etaMinutes} min`;
+    const etaValue = Number.isFinite(etaMinutes) ? etaMinutes : stopCount * 6 + 12;
+    const distanceValue = Number.isFinite(totalDistKm) ? totalDistKm : stopCount * 0.75 + 1.2;
+
+    if (etaEl) etaEl.textContent = stopCount === 0 ? '~0 min' : `~${etaValue} min`;
 
     const distEl = document.getElementById('routeDistance');
-    if (distEl) distEl.textContent = stopCount === 0 ? '~0.0 km' : `~${totalDistKm} km`;
+    if (distEl) distEl.textContent = stopCount === 0 ? '~0.0 km' : `~${distanceValue.toFixed(1)} km`;
 }
-
-/**
- * renderMapMarkersIn — Places interactive color-coded beacons onto the live GIS campus radar map.
  */
 function renderMapMarkersIn(mapBgSelector) {
     const mapBg = document.querySelector(mapBgSelector);
