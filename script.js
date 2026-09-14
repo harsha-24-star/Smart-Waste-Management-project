@@ -509,7 +509,36 @@ async function buildRouteHTML() {
 
     const eligibleBins = bins.filter(bin => Number(bin.fillLevel) >= 50);
 
-    if (!routeData || !routeData.route || routeData.route.length <= 2) {
+    let sequencedRoute = [];
+    let returnLegDist = 0.5;
+    let totalRouteDist = 0;
+    let totalMinutes = 0;
+    let routePoints = [];
+
+    if (routeData && Array.isArray(routeData.route) && routeData.route.length > 2) {
+        const apiBins = routeData.route.filter(point => point.type === "bin");
+        let currentPos = 'DEPOT';
+        let cumulativeDist = 0;
+
+        routePoints = apiBins.map((bin, index) => {
+            const dist = getSegmentDistanceKm(currentPos, bin);
+            cumulativeDist += dist;
+            currentPos = bin;
+            return {
+                bin,
+                segmentDist: dist,
+                cumulativeDist: Number(cumulativeDist.toFixed(2)),
+                score: Number((Number(bin.fillLevel || 0) / (dist * 45 + 10)).toFixed(1))
+            };
+        });
+
+        const lastNode = apiBins.length > 0 ? apiBins[apiBins.length - 1] : 'DEPOT';
+        returnLegDist = getSegmentDistanceKm(lastNode, 'FACILITY');
+        totalRouteDist = Number((cumulativeDist + returnLegDist).toFixed(2));
+        const drivingMinutes = (totalRouteDist / 20) * 60;
+        const serviceMinutes = routePoints.length * 3;
+        totalMinutes = Math.round(drivingMinutes + serviceMinutes + 4);
+    } else {
         if (eligibleBins.length === 0) {
             const emptyHtml = `
                 <div class="empty-route-state">
@@ -520,15 +549,15 @@ async function buildRouteHTML() {
             return { html: emptyHtml, stopCount: 0, criticalCount: 0, totalDistKm: 0, etaMinutes: 0 };
         }
 
-        const { sequencedRoute, finalNode, totalPickupDist } = optimizeCollectionRoute(eligibleBins);
-        const returnLegDist = getSegmentDistanceKm(finalNode, 'FACILITY');
-        const totalRouteDist = Number((totalPickupDist + returnLegDist).toFixed(2));
+        const optimized = optimizeCollectionRoute(eligibleBins);
+        sequencedRoute = optimized.sequencedRoute;
+        returnLegDist = getSegmentDistanceKm(optimized.finalNode, 'FACILITY');
+        totalRouteDist = Number((optimized.totalPickupDist + returnLegDist).toFixed(2));
         const drivingMinutes = (totalRouteDist / 20) * 60;
         const serviceMinutes = sequencedRoute.length * 3;
-        const totalMinutes = Math.round(drivingMinutes + serviceMinutes + 4);
+        totalMinutes = Math.round(drivingMinutes + serviceMinutes + 4);
+        routePoints = sequencedRoute;
     }
-
-    let html = `
 
     let html = `
         <div class="route-node depot origin">
@@ -554,32 +583,23 @@ async function buildRouteHTML() {
         </div>
     `;
 
-    const routePoints = Array.isArray(routeData?.route)
-        ? routeData.route.filter(point => point.type === "bin")
-        : sequencedRoute;
-
     routePoints.forEach((step, index) => {
         const bin = step.bin || step;
         const status = getBinStatus(bin.fillLevel);
-
-        const binNumber = bin.id.replace("BIN-", "");
+        const binNumber = bin.id ? bin.id.replace("BIN-", "") : (index + 1);
 
         html += `
             <div class="route-node ${status.className}"
                  onclick="showBinDetails('${bin.id}')">
 
                 <div class="route-node-spine">
-
                     <span class="spine-icon ${status.className}">
                         ${index + 1}
                     </span>
-
                     <span class="spine-connector"></span>
-
                 </div>
 
                 <div class="route-node-content">
-
                     <div class="route-node-header">
                         <div class="route-badges-row">
                             <span class="route-badge ${status.className}">Priority ${status.priority}</span>
@@ -589,7 +609,7 @@ async function buildRouteHTML() {
                     </div>
 
                     <div class="route-node-name">
-                        Bin ${binNumber} &bull; ${bin.location}
+                        Bin ${binNumber} &bull; ${bin.location || 'Campus Location'}
                     </div>
 
                     <div class="route-node-footer">
@@ -598,56 +618,46 @@ async function buildRouteHTML() {
                         <span><i class='bx bx-chip'></i> ${bin.sensorId || 'ESP32'}</span>
                         <span class="action-link">View Details &rarr;</span>
                     </div>
-
                 </div>
-
             </div>
         `;
     });
 
-
-    // --------------------------------------------------
     // FINAL COLLECTION FACILITY
-    // --------------------------------------------------
-
     html += `
         <div class="route-node depot destination">
-
             <div class="route-node-spine">
-
                 <span class="spine-icon">
                     <i class='bx bxs-flag-checkered'></i>
                 </span>
-
             </div>
 
             <div class="route-node-content">
                 <span class="route-badge depot">COLLECTION POINT</span>
-                <span class="route-dist-badge return"><i class='bx bx-navigation'></i> +${returnLegDist ?? 0} km</span>
+                <span class="route-dist-badge return"><i class='bx bx-navigation'></i> +${returnLegDist} km</span>
 
                 <div class="route-node-name">
                     Central Waste Facility
                 </div>
 
                 <span class="route-node-sub">
-                    Waste unloading, compaction &amp; depot return &amp; total route: ${totalRouteDist ?? 0} km
+                    Waste unloading, compaction &amp; depot return &amp; total route: ${totalRouteDist} km
                 </span>
             </div>
-
         </div>
     `;
 
-    const criticalCount = (Array.isArray(routeData?.route) ? routeData.route.filter(point => point.type === "bin") : sequencedRoute || []).filter(item => {
+    const criticalCount = routePoints.filter(item => {
         const fill = Number((item.bin || item).fillLevel);
         return fill >= 90;
     }).length;
 
     return {
         html,
-        stopCount: (Array.isArray(routeData?.route) ? routeData.route.filter(point => point.type === "bin") : sequencedRoute || []).length,
+        stopCount: routePoints.length,
         criticalCount,
-        totalDistKm: typeof totalRouteDist === "number" ? totalRouteDist : 0,
-        etaMinutes: typeof totalMinutes === "number" ? totalMinutes : 0
+        totalDistKm: totalRouteDist,
+        etaMinutes: totalMinutes
     };
 }
 
@@ -686,7 +696,6 @@ async function renderRoutePage() {
     const distEl = document.getElementById('routeDistance');
     if (distEl) distEl.textContent = stopCount === 0 ? '~0.0 km' : `~${distanceValue.toFixed(1)} km`;
 }
- */
 function renderMapMarkersIn(mapBgSelector) {
     const mapBg = document.querySelector(mapBgSelector);
     if (!mapBg) return;
