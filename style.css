@@ -3326,5 +3326,871 @@ body {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
+
+        
+    }
+}
+
+
+
+/* ============================================================
+   SMART BIN INTRO SCREEN
+============================================================ */
+
+.smart-bin-intro {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 35%, rgba(34, 211, 197, 0.12), transparent 35%),
+        #050b12;
+    color: #ffffff;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.smart-bin-intro.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.intro-content {
+    position: relative;
+    z-index: 2;
+    width: min(900px, 92vw);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.intro-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 15px;
+    border: 1px solid rgba(34, 211, 197, 0.3);
+    border-radius: 30px;
+    background: rgba(34, 211, 197, 0.06);
+    color: #22d3c5;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+}
+
+.intro-live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22d3c5;
+    box-shadow: 0 0 12px #22d3c5;
+    animation: introLivePulse 1.5s infinite;
+}
+
+.intro-content h1 {
+    margin: 22px 0 8px;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: clamp(36px, 6vw, 68px);
+    line-height: 0.98;
+    font-weight: 800;
+    letter-spacing: -2px;
+}
+
+.intro-content h1 span {
+    color: #22d3c5;
+}
+
+.intro-subtitle {
+    margin: 0;
+    color: rgba(255,255,255,0.58);
+    font-size: 14px;
+    letter-spacing: 0.3px;
+}
+
+/* ---------- SMART BIN ---------- */
+
+.smart-bin-visual {
+    position: relative;
+    width: 310px;
+    height: 390px;
+    margin: 25px auto 10px;
+}
+
+.smart-bin-body {
+    position: absolute;
+    left: 50%;
+    bottom: 25px;
+    transform: translateX(-50%);
+    width: 205px;
+    height: 260px;
+    border: 2px solid rgba(34, 211, 197, 0.55);
+    border-radius: 12px 12px 28px 28px;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.025),
+            rgba(34,211,197,0.08),
+            rgba(255,255,255,0.025)
+        );
+    box-shadow:
+        inset 0 0 35px rgba(34,211,197,0.06),
+        0 0 35px rgba(34,211,197,0.12);
+}
+
+/* Bin vertical highlights */
+
+.smart-bin-body::before,
+.smart-bin-body::after {
+    content: "";
+    position: absolute;
+    top: 15px;
+    bottom: 15px;
+    width: 2px;
+    background: rgba(34,211,197,0.12);
+}
+
+.smart-bin-body::before {
+    left: 22px;
+}
+
+.smart-bin-body::after {
+    right: 22px;
+}
+
+/* ---------- BIN LID ---------- */
+
+.smart-bin-lid {
+    position: absolute;
+    left: 50%;
+    top: 72px;
+    transform: translateX(-50%);
+    width: 225px;
+    height: 28px;
+    border: 2px solid rgba(34,211,197,0.6);
+    border-radius: 8px;
+    background: #0c1820;
+    box-shadow:
+        0 0 18px rgba(34,211,197,0.15),
+        inset 0 -5px 10px rgba(0,0,0,0.35);
+    z-index: 5;
+}
+
+.lid-sensor-mount {
+    position: absolute;
+    left: 50%;
+    bottom: -10px;
+    transform: translateX(-50%);
+    width: 52px;
+    height: 10px;
+    border-radius: 0 0 7px 7px;
+    background: #101e28;
+}
+
+/* ---------- ULTRASONIC SENSOR ---------- */
+
+.ultrasonic-sensor {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92px;
+    height: 55px;
+    z-index: 20;
+}
+
+.sensor-body {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: 76px;
+    height: 43px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 9px;
+    border: 2px solid #687b86;
+    border-radius: 6px;
+    background: #17242d;
+    box-shadow: 0 0 15px rgba(34,211,197,0.25);
+}
+
+.sensor-eye {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #a8bbc3;
+    border-radius: 50%;
+    background: #071017;
+    box-shadow:
+        inset 0 0 8px rgba(34,211,197,0.2),
+        0 0 5px rgba(34,211,197,0.15);
+}
+
+/* ---------- SENSOR WAVES ---------- */
+
+.sensor-wave {
+    position: absolute;
+    left: 50%;
+    top: 42px;
+    transform: translateX(-50%);
+    border: 1px solid rgba(34,211,197,0.55);
+    border-top: 0;
+    border-radius: 0 0 50% 50%;
+    opacity: 0;
+    animation: ultrasonicWave 2.2s infinite;
+}
+
+.wave-one {
+    width: 65px;
+    height: 45px;
+}
+
+.wave-two {
+    width: 110px;
+    height: 80px;
+    animation-delay: 0.55s;
+}
+
+.wave-three {
+    width: 155px;
+    height: 115px;
+    animation-delay: 1.1s;
+}
+
+/* ---------- TRASH ---------- */
+
+.bin-trash {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 12px;
+    height: 175px;
+    overflow: hidden;
+    border-radius: 8px 8px 20px 20px;
+}
+
+.trash-item {
+    position: absolute;
+    border-radius: 5px;
+    opacity: 0.85;
+}
+
+.trash-one {
+    width: 45px;
+    height: 70px;
+    left: 22px;
+    bottom: -5px;
+    transform: rotate(-18deg);
+    background: #53656d;
+}
+
+.trash-two {
+    width: 55px;
+    height: 42px;
+    left: 75px;
+    bottom: 0;
+    transform: rotate(12deg);
+    background: #7c6650;
+}
+
+.trash-three {
+    width: 42px;
+    height: 78px;
+    right: 22px;
+    bottom: -7px;
+    transform: rotate(20deg);
+    background: #596b72;
+}
+
+.trash-four {
+    width: 58px;
+    height: 34px;
+    left: 38px;
+    bottom: 42px;
+    transform: rotate(8deg);
+    background: #697d67;
+}
+
+.trash-five {
+    width: 45px;
+    height: 45px;
+    right: 48px;
+    bottom: 38px;
+    transform: rotate(-15deg);
+    background: #8b765e;
+}
+
+/* ---------- LIVE FILL ---------- */
+
+.bin-fill-level {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0%;
+    background: linear-gradient(
+        to top,
+        rgba(34,211,197,0.22),
+        rgba(34,211,197,0.04)
+    );
+    border-top: 1px solid rgba(34,211,197,0.45);
+    transition: height 1s ease;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* ---------- BIN DISPLAY ---------- */
+
+.bin-display {
+    position: absolute;
+    left: 50%;
+    top: 128px;
+    transform: translateX(-50%);
+    width: 115px;
+    padding: 10px 8px;
+    border: 1px solid rgba(34,211,197,0.35);
+    border-radius: 8px;
+    background: rgba(3,10,15,0.82);
+    box-shadow: 0 0 15px rgba(34,211,197,0.12);
+    z-index: 8;
+}
+
+.bin-display-label {
+    display: block;
+    color: rgba(255,255,255,0.4);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 7px;
+    letter-spacing: 1px;
+}
+
+.bin-display strong {
+    display: block;
+    margin: 3px 0;
+    color: #22d3c5;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 25px;
+}
+
+.bin-display-status {
+    display: block;
+    color: rgba(255,255,255,0.55);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 7px;
+    letter-spacing: 0.8px;
+}
+
+/* ---------- GROUND ---------- */
+
+.bin-ground-glow {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 250px;
+    height: 35px;
+    border-radius: 50%;
+    background: rgba(34,211,197,0.12);
+    filter: blur(18px);
+}
+
+/* ---------- SENSOR INFO ---------- */
+
+.intro-sensor-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: -2px;
+    color: rgba(255,255,255,0.45);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.7px;
+}
+
+.intro-info-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.intro-info-item i {
+    color: #22d3c5;
+    font-size: 15px;
+}
+
+.intro-info-divider {
+    width: 1px;
+    height: 15px;
+    background: rgba(255,255,255,0.12);
+}
+
+/* ---------- ENTER BUTTON ---------- */
+
+.intro-enter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 12px 23px;
+    border: 1px solid rgba(34,211,197,0.45);
+    border-radius: 8px;
+    background: rgba(34,211,197,0.08);
+    color: #22d3c5;
+    cursor: pointer;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    transition: all 0.25s ease;
+}
+
+.intro-enter-btn i {
+    font-size: 18px;
+    transition: transform 0.25s ease;
+}
+
+.intro-enter-btn:hover {
+    background: rgba(34,211,197,0.16);
+    border-color: #22d3c5;
+    box-shadow: 0 0 25px rgba(34,211,197,0.18);
+}
+
+.intro-enter-btn:hover i {
+    transform: translateX(4px);
+}
+
+.intro-loading-text {
+    margin-top: 9px;
+    color: rgba(255,255,255,0.3);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px;
+}
+
+/* ---------- ANIMATIONS ---------- */
+
+@keyframes ultrasonicWave {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) scaleY(0.7);
+    }
+
+    25% {
+        opacity: 0.8;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) scaleY(1);
+    }
+}
+
+@keyframes introLivePulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.45;
+        transform: scale(0.7);
+    }
+}
+
+/* ---------- MOBILE ---------- */
+
+@media (max-width: 600px) {
+
+    .intro-content h1 {
+        font-size: 38px;
+        letter-spacing: -1px;
+    }
+
+    .intro-subtitle {
+        font-size: 12px;
+    }
+
+    .smart-bin-visual {
+        transform: scale(0.82);
+        margin-top: 10px;
+        margin-bottom: -10px;
+    }
+
+    .intro-sensor-info {
+        gap: 8px;
+        font-size: 7px;
+    }
+
+    .intro-info-divider {
+        height: 10px;
+    }
+
+    .intro-enter-btn {
+        margin-top: 14px;
+    }
+}
+
+/* ============================================================
+   SMART BIN ENTER DASHBOARD TRANSITION
+============================================================ */
+
+.smart-bin-intro.transitioning .smart-bin-lid {
+    animation: binLidOpen 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.smart-bin-intro.transitioning .ultrasonic-sensor {
+    animation: sensorLift 1.2s ease forwards;
+}
+
+.smart-bin-intro.transitioning .sensor-wave {
+    animation-duration: 1s;
+}
+
+/* Lid opens upward and tilts slightly */
+@keyframes binLidOpen {
+    0% {
+        transform: translateX(-50%) rotateX(0deg);
+        transform-origin: center bottom;
+    }
+
+    40% {
+        transform: translateX(-50%) translateY(-12px) rotateX(-35deg);
+    }
+
+    100% {
+        transform: translateX(-50%) translateY(-38px) rotateX(-70deg);
+    }
+}
+
+/* Sensor rises slightly as the lid opens */
+@keyframes sensorLift {
+    0% {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    100% {
+        transform: translateX(-50%) translateY(-18px);
+    }
+}
+
+/* Make the scanning waves more visible during transition */
+.smart-bin-intro.transitioning .wave-one,
+.smart-bin-intro.transitioning .wave-two,
+.smart-bin-intro.transitioning .wave-three {
+    border-color: rgba(34, 211, 197, 0.9);
+}
+
+/* ============================================================
+   SMART BIN — TRASH FILL ANIMATION
+============================================================ */
+
+/* The trash starts low inside the bin */
+.smart-bin-intro.transitioning .bin-trash {
+    animation: trashRise 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* The glowing fill level rises together with the trash */
+.smart-bin-intro.transitioning .bin-fill-level {
+    animation: fillRise 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Individual pieces move slightly differently */
+.smart-bin-intro.transitioning .trash-one {
+    animation: trashPieceOne 1.5s ease forwards;
+}
+
+.smart-bin-intro.transitioning .trash-two {
+    animation: trashPieceTwo 1.5s ease forwards;
+}
+
+.smart-bin-intro.transitioning .trash-three {
+    animation: trashPieceThree 1.5s ease forwards;
+}
+
+.smart-bin-intro.transitioning .trash-four {
+    animation: trashPieceFour 1.5s ease forwards;
+}
+
+.smart-bin-intro.transitioning .trash-five {
+    animation: trashPieceFive 1.5s ease forwards;
+}
+
+
+/* Main trash movement */
+@keyframes trashRise {
+    0% {
+        transform: translateY(45px);
+    }
+
+    45% {
+        transform: translateY(15px);
+    }
+
+    100% {
+        transform: translateY(-5px);
+    }
+}
+
+
+/* Glowing sensor fill */
+@keyframes fillRise {
+    0% {
+        height: 5%;
+    }
+
+    30% {
+        height: 25%;
+    }
+
+    60% {
+        height: 55%;
+    }
+
+    100% {
+        height: 78%;
+    }
+}
+
+
+/* Individual trash movement */
+
+@keyframes trashPieceOne {
+    0% {
+        transform: translateY(30px) rotate(-18deg);
+    }
+
+    100% {
+        transform: translateY(-4px) rotate(-13deg);
+    }
+}
+
+@keyframes trashPieceTwo {
+    0% {
+        transform: translateY(38px) rotate(12deg);
+    }
+
+    100% {
+        transform: translateY(-10px) rotate(8deg);
+    }
+}
+
+@keyframes trashPieceThree {
+    0% {
+        transform: translateY(28px) rotate(20deg);
+    }
+
+    100% {
+        transform: translateY(-6px) rotate(15deg);
+    }
+}
+
+@keyframes trashPieceFour {
+    0% {
+        transform: translateY(45px) rotate(8deg);
+    }
+
+    100% {
+        transform: translateY(-15px) rotate(5deg);
+    }
+}
+
+@keyframes trashPieceFive {
+    0% {
+        transform: translateY(40px) rotate(-15deg);
+    }
+
+    100% {
+        transform: translateY(-12px) rotate(-10deg);
+    }
+}
+
+
+/* ============================================================
+   TRASH FALLING INTO BIN
+============================================================ */
+
+.falling-trash {
+    position: absolute;
+    left: 50%;
+    top: 70px;
+    width: 250px;
+    height: 210px;
+    transform: translateX(-50%);
+    z-index: 15;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.falling-item {
+    position: absolute;
+    top: -60px;
+
+    font-size: 25px;
+    line-height: 1;
+
+    opacity: 0;
+    filter: drop-shadow(0 0 7px rgba(255,255,255,0.12));
+
+    transform-origin: center;
+}
+
+/* Different starting positions */
+
+.falling-one {
+    left: 25px;
+}
+
+.falling-two {
+    left: 65px;
+}
+
+.falling-three {
+    left: 105px;
+}
+
+.falling-four {
+    left: 145px;
+}
+
+.falling-five {
+    left: 185px;
+}
+
+.falling-six {
+    left: 115px;
+}
+
+
+/* Activate falling animation */
+
+.smart-bin-intro.transitioning .falling-one {
+    animation: trashFallOne 1.25s ease-in forwards;
+}
+
+.smart-bin-intro.transitioning .falling-two {
+    animation: trashFallTwo 1.25s 0.12s ease-in forwards;
+}
+
+.smart-bin-intro.transitioning .falling-three {
+    animation: trashFallThree 1.25s 0.24s ease-in forwards;
+}
+
+.smart-bin-intro.transitioning .falling-four {
+    animation: trashFallFour 1.25s 0.36s ease-in forwards;
+}
+
+.smart-bin-intro.transitioning .falling-five {
+    animation: trashFallFive 1.25s 0.48s ease-in forwards;
+}
+
+.smart-bin-intro.transitioning .falling-six {
+    animation: trashFallSix 1.25s 0.60s ease-in forwards;
+}
+
+
+/* Falling paths */
+
+@keyframes trashFallOne {
+    0% {
+        opacity: 0;
+        transform: translateY(-25px) rotate(-20deg) scale(0.8);
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    75% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(170px) rotate(25deg) scale(0.9);
+    }
+}
+
+@keyframes trashFallTwo {
+    0% {
+        opacity: 0;
+        transform: translateY(-35px) rotate(15deg) scale(0.8);
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(175px) rotate(-25deg) scale(0.9);
+    }
+}
+
+@keyframes trashFallThree {
+    0% {
+        opacity: 0;
+        transform: translateY(-30px) rotate(-10deg) scale(0.8);
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(165px) rotate(20deg) scale(0.9);
+    }
+}
+
+@keyframes trashFallFour {
+    0% {
+        opacity: 0;
+        transform: translateY(-30px) rotate(25deg) scale(0.8);
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(175px) rotate(-20deg) scale(0.9);
+    }
+}
+
+@keyframes trashFallFive {
+    0% {
+        opacity: 0;
+        transform: translateY(-40px) rotate(-15deg) scale(0.8);
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(160px) rotate(30deg) scale(0.9);
+    }
+}
+
+@keyframes trashFallSix {
+    0% {
+        opacity: 0;
+        transform: translateY(-35px) rotate(10deg) scale(0.8);
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(170px) rotate(-30deg) scale(0.9);
     }
 }

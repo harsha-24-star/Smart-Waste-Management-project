@@ -13,6 +13,126 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
 <body class="dark-theme">
+    <!-- ============================================================
+     SMART BIN INTRO / SENSOR VISUALIZATION
+============================================================ -->
+<div class="smart-bin-intro" id="smartBinIntro">
+
+    <div class="intro-content">
+
+        <div class="intro-badge">
+            <span class="intro-live-dot"></span>
+            LIVE IoT SENSOR
+        </div>
+
+        <h1>SMART WASTE<br><span>MANAGEMENT</span></h1>
+
+        <p class="intro-subtitle">
+            Intelligent waste monitoring powered by ultrasonic sensing
+        </p>
+
+        <!-- Smart Dustbin -->
+        <div class="smart-bin-visual">
+
+            <!-- Ultrasonic Sensor -->
+            <div class="ultrasonic-sensor">
+                <div class="sensor-body">
+                    <div class="sensor-eye"></div>
+                    <div class="sensor-eye"></div>
+                </div>
+
+                <!-- Sensor Waves -->
+                <div class="sensor-wave wave-one"></div>
+                <div class="sensor-wave wave-two"></div>
+                <div class="sensor-wave wave-three"></div>
+            </div>
+
+            <!-- Bin -->
+            <div class="smart-bin-body">
+
+                <!-- Bin Lid -->
+                <div class="smart-bin-lid">
+                    <div class="lid-sensor-mount"></div>
+                </div>
+
+                <!-- Trash inside -->
+              <!-- Trash inside the bin -->
+<div class="bin-trash">
+
+    <div class="trash-item trash-one"></div>
+    <div class="trash-item trash-two"></div>
+    <div class="trash-item trash-three"></div>
+    <div class="trash-item trash-four"></div>
+    <div class="trash-item trash-five"></div>
+
+</div>
+
+<!-- Trash falling into the bin -->
+<div class="falling-trash" aria-hidden="true">
+
+    <div class="falling-item falling-one">🧴</div>
+    <div class="falling-item falling-two">🥤</div>
+    <div class="falling-item falling-three">📦</div>
+    <div class="falling-item falling-four">🥫</div>
+    <div class="falling-item falling-five">🧻</div>
+    <div class="falling-item falling-six">🍶</div>
+
+</div>
+
+                <!-- Fill level -->
+                <div class="bin-fill-level" id="introFillLevel"></div>
+
+                <!-- Bin front display -->
+                <div class="bin-display">
+                    <span class="bin-display-label">FILL LEVEL</span>
+                    <strong id="introFillPercentage">0%</strong>
+                    <span class="bin-display-status" id="introFillStatus">
+                        CONNECTING...
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- Ground glow -->
+            <div class="bin-ground-glow"></div>
+
+        </div>
+
+        <!-- Sensor information -->
+        <div class="intro-sensor-info">
+            <div class="intro-info-item">
+                <i class='bx bx-radar'></i>
+                <span>HC-SR04</span>
+            </div>
+
+            <div class="intro-info-divider"></div>
+
+           <div class="intro-info-item">
+                <i class='bx bx-wifi'></i>
+                <span id="esp32StatusText">ESP32 CONNECTING...</span>
+            </div>
+
+            <div class="intro-info-divider"></div>
+
+            <div class="intro-info-item">
+                <i class='bx bx-data'></i>
+                <span>FIREBASE RTDB</span>
+            </div>
+        </div>
+
+        <!-- Enter Dashboard -->
+        <button class="intro-enter-btn" id="introEnterBtn" onclick="enterDashboard()">
+            <span>ENTER DASHBOARD</span>
+            <i class='bx bx-right-arrow-alt'></i>
+        </button>
+
+        <div class="intro-loading-text" id="introLoadingText">
+            Establishing secure sensor connection...
+        </div>
+
+    </div>
+
+</div>
 
     <!-- Ambient background lighting for glassmorphic depth -->
     <div class="ambient-glow glow-top"></div>

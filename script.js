@@ -125,7 +125,40 @@ binsRef.on("value", (snapshot) => {
     console.error("Firebase Realtime Database listener error:", error);
     updateFirebaseSyncUI('error');
 });
+// ============================================================
+// ESP32 CONNECTION STATUS
+// ============================================================
 
+function updateESP32Status() {
+
+    const statusText = document.getElementById("esp32StatusText");
+
+    if (!statusText) return;
+
+    // BIN-01 is the ESP32 currently connected to this system
+    const bin = bins.find(b => b.id === "BIN-01");
+
+    if (!bin || !bin.lastUpdated) {
+        statusText.textContent = "ESP32 DISCONNECTED";
+        return;
+    }
+
+    const lastUpdate = new Date(bin.lastUpdated).getTime();
+    const now = Date.now();
+
+    const age = now - lastUpdate;
+
+    // Consider ESP32 connected if a reading arrived
+    // within the last 15 seconds.
+    if (age <= 5000) {
+        statusText.textContent = "ESP32 CONNECTED";
+    } else {
+        statusText.textContent = "ESP32 DISCONNECTED";
+    }
+}
+
+// Check the ESP32 status every 2 seconds
+setInterval(updateESP32Status, 50);
 
 const pageTitles = {
     dashboard: { title: "Operations Command Center",        subtitle: "Real-time ultrasonic telemetry, IoT fleet monitoring, and live hardware diagnostics" },
@@ -1402,3 +1435,107 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsDarkModeToggle = document.getElementById('settingsDarkModeToggle');
     if (settingsDarkModeToggle) settingsDarkModeToggle.addEventListener('change', toggleTheme);
 });
+/* ============================================================
+   SMART BIN INTRO SCREEN
+============================================================ */
+
+function enterDashboard() {
+    const intro = document.getElementById("smartBinIntro");
+    const lid = document.querySelector(".smart-bin-lid");
+    const sensor = document.querySelector(".ultrasonic-sensor");
+    const button = document.getElementById("introEnterBtn");
+    const loadingText = document.getElementById("introLoadingText");
+    const percentageText = document.getElementById("introFillPercentage");
+    const statusText = document.getElementById("introFillStatus");
+    const fillLevel = document.getElementById("introFillLevel");
+
+    if (!intro) return;
+
+    // Prevent clicking more than once
+    if (intro.classList.contains("transitioning")) return;
+
+    intro.classList.add("transitioning");
+
+    // Change button
+    if (button) {
+        button.disabled = true;
+        button.style.pointerEvents = "none";
+        button.innerHTML = `
+            <span>SCANNING BIN...</span>
+            <i class="bx bx-loader-alt bx-spin"></i>
+        `;
+    }
+
+    if (loadingText) {
+        loadingText.textContent = "Ultrasonic sensor scanning...";
+    }
+
+    // Open lid
+    if (lid) {
+        lid.classList.add("lid-opening");
+    }
+
+    // Move sensor
+    if (sensor) {
+        sensor.classList.add("sensor-lifting");
+    }
+
+    // Start percentage at 0
+    let percentage = 0;
+
+    if (percentageText) {
+        percentageText.textContent = "0%";
+    }
+
+    if (fillLevel) {
+        fillLevel.style.animation = "none";
+        fillLevel.style.height = "0%";
+    }
+
+    // Animate 0% → 100%
+    const percentageTimer = setInterval(() => {
+
+        percentage += 2;
+
+        if (percentage > 100) {
+            percentage = 100;
+        }
+
+        if (percentageText) {
+            percentageText.textContent = percentage + "%";
+        }
+
+        if (fillLevel) {
+            fillLevel.style.height = percentage + "%";
+        }
+
+        // Stop exactly at 100%
+        if (percentage >= 100) {
+            clearInterval(percentageTimer);
+
+            if (statusText) {
+                statusText.textContent = "FULL — VERIFIED";
+            }
+
+            if (loadingText) {
+                loadingText.textContent = "Sensor data verified ✓";
+            }
+        }
+
+    }, 25);
+
+
+    /*
+       Give the animation enough time to finish.
+       Then transition to the real dashboard.
+    */
+    setTimeout(() => {
+
+        intro.classList.add("hidden");
+
+        setTimeout(() => {
+            intro.style.display = "none";
+        }, 850);
+
+    }, 3000);
+}
