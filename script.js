@@ -4,7 +4,7 @@
    Architecture:
    1. FIREBASE REALTIME DATABASE — Live WebSocket connection & status
    2. DATA & UTILITIES           — Status helpers, formatting, counters
-   3. RENDER WORKSPACES          — Dashboard, Bins, Route, AI, Analytics, History, Settings
+   3. RENDER WORKSPACES          — Overview, Bins, Route, Analytics, Settings
    4. NAVIGATION                 — Dynamic page switching & header syncing
    5. MODAL & INTERACTION        — Bin inspection, search, filter, refresh
    6. INITIALIZATION             — Theme management & event listeners
@@ -90,16 +90,16 @@ function updateFirebaseSyncUI(state, customLabel = null) {
 }
 
 /**
- * triggerDataPulse — Subtle micro-animation when Firebase data updates.
+ * triggerDataPulse — Subtle UI indication when Firebase data updates.
  */
 function triggerDataPulse() {
-    const summaryCards = document.querySelectorAll('.summary-card');
-    summaryCards.forEach(card => {
-        card.classList.remove('live-pulse');
-        void card.offsetHeight; // reflow
-        card.classList.add('live-pulse');
-        setTimeout(() => card.classList.remove('live-pulse'), 1200);
-    });
+    const headerPill = document.querySelector('.header-sync-pill');
+    if (headerPill) {
+        headerPill.classList.remove('live-pulse');
+        void headerPill.offsetHeight;
+        headerPill.classList.add('live-pulse');
+        setTimeout(() => headerPill.classList.remove('live-pulse'), 800);
+    }
 }
 
 // Monitor raw connection state via .info/connected
@@ -127,6 +127,7 @@ binsRef.on("value", (snapshot) => {
     console.error("Firebase Realtime Database listener error:", error);
     updateFirebaseSyncUI('error');
 });
+
 // ============================================================
 // ESP32 CONNECTION STATUS
 // ============================================================
@@ -162,11 +163,11 @@ function updateESP32Status() {
 setInterval(updateESP32Status, 2000);
 
 const pageTitles = {
-    dashboard: { title: "Overview", subtitle: "Real-time ultrasonic sensor monitoring across campus" },
-    bins:      { title: "Bin Monitoring", subtitle: "Individual node telemetry, fill levels, and sensor health" },
-    analytics: { title: "Analytics", subtitle: "Fill-level distribution and campus capacity breakdown" },
-    ai:        { title: "Collection Route", subtitle: "Rule-based collection route sequencing and horizon projections" },
-    settings:  { title: "Settings", subtitle: "System thresholds, theme preferences, and telemetry status" },
+    dashboard: { title: "Overview", subtitle: "Monitor bin levels and collection needs." },
+    bins:      { title: "Bin Monitoring", subtitle: "Individual node telemetry, fill levels, and sensor health." },
+    analytics: { title: "Analytics", subtitle: "Fill-level distribution and campus capacity breakdown." },
+    ai:        { title: "Collection Route", subtitle: "Rule-based collection route sequencing and horizon projections." },
+    settings:  { title: "Settings", subtitle: "System thresholds, theme preferences, and telemetry status." },
 };
 
 
@@ -224,7 +225,7 @@ function updateThresholdLabels() {
     if (pillWarning) pillWarning.innerHTML = `Warning ${w}–${c - 1}%`;
     if (pillCritical) pillCritical.innerHTML = `Critical &ge; ${c}%`;
 
-    // 2. Map Legend
+    // 2. Directory Legend
     const legNorm = document.getElementById('legendTextNormal');
     const legMed = document.getElementById('legendTextMedium');
     const legWarn = document.getElementById('legendTextWarning');
@@ -329,6 +330,11 @@ function animateCounter(elemId, targetValue, duration = 250, forceFromZero = fal
     const el = document.getElementById(elemId);
     if (!el) return;
 
+    if (typeof targetValue !== 'number' || isNaN(targetValue)) {
+        el.textContent = targetValue;
+        return;
+    }
+
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         el.textContent = targetValue;
         return;
@@ -361,7 +367,7 @@ function animateCounter(elemId, targetValue, duration = 250, forceFromZero = fal
 
 
 /* ============================================================
-   4. MASTER RENDER FUNCTIONS
+   3. MASTER RENDER FUNCTIONS
    ============================================================ */
 
 /**
@@ -382,17 +388,25 @@ function updateSummary(forceFromZero = false) {
 
     const totalCount = bins.length;
 
-    animateCounter('totalBins', totalCount, 250, forceFromZero);
-    animateCounter('normalBins', normal, 250, forceFromZero);
-    animateCounter('mediumBins', medium, 250, forceFromZero);
-    animateCounter('nearlyFullBins', warning, 250, forceFromZero);
-    animateCounter('criticalBins', critical, 250, forceFromZero);
+    if (totalCount === 0) {
+        // Honest awaiting state: display em-dashes instead of fabricated zeros
+        const nullIds = ['totalBins', 'normalBins', 'mediumBins', 'nearlyFullBins', 'criticalBins', 'tierWarningVal', 'tierCriticalVal'];
+        nullIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '—';
+        });
+    } else {
+        animateCounter('totalBins', totalCount, 250, forceFromZero);
+        animateCounter('normalBins', normal, 250, forceFromZero);
+        animateCounter('mediumBins', medium, 250, forceFromZero);
+        animateCounter('nearlyFullBins', warning, 250, forceFromZero);
+        animateCounter('criticalBins', critical, 250, forceFromZero);
 
-    // Sync status tier strip counts
-    const tierWarnEl = document.getElementById('tierWarningVal');
-    if (tierWarnEl) tierWarnEl.textContent = warning;
-    const tierCritEl = document.getElementById('tierCriticalVal');
-    if (tierCritEl) tierCritEl.textContent = critical;
+        const tierWarnEl = document.getElementById('tierWarningVal');
+        if (tierWarnEl) tierWarnEl.textContent = warning;
+        const tierCritEl = document.getElementById('tierCriticalVal');
+        if (tierCritEl) tierCritEl.textContent = critical;
+    }
 
     // Sync Action Required badge on Hero Card 2
     const actionBadge = document.getElementById('actionNeededBadge');
@@ -423,7 +437,7 @@ function updateSummary(forceFromZero = false) {
 
     const sensorsOnline = document.getElementById('sensorsOnline');
     if (sensorsOnline) {
-        sensorsOnline.textContent = totalCount > 0 ? `${totalCount} / ${totalCount}` : `0 / 0 (Pending)`;
+        sensorsOnline.textContent = totalCount > 0 ? `${totalCount} / ${totalCount}` : `— / —`;
     }
 
     // System Health calculation (do not report 100% when no data has arrived)
@@ -474,23 +488,23 @@ function updateSummary(forceFromZero = false) {
     const mdWarnVal = document.getElementById('miniDistWarningVal');
     const mdCritVal = document.getElementById('miniDistCriticalVal');
 
-    if (mdNormVal) mdNormVal.textContent = normal;
-    if (mdMedVal) mdMedVal.textContent = medium;
-    if (mdWarnVal) mdWarnVal.textContent = warning;
-    if (mdCritVal) mdCritVal.textContent = critical;
+    if (mdNormVal) mdNormVal.textContent = totalCount > 0 ? normal : '0';
+    if (mdMedVal) mdMedVal.textContent = totalCount > 0 ? medium : '0';
+    if (mdWarnVal) mdWarnVal.textContent = totalCount > 0 ? warning : '0';
+    if (mdCritVal) mdCritVal.textContent = totalCount > 0 ? critical : '0';
 }
 
 /**
- * buildBinCardsHTML — Generates premium glassmorphic bin hardware cards.
+ * buildBinCardsHTML — Generates clean, professional structured table rows for the Bin Monitoring page.
  */
 function buildBinCardsHTML(binsToRender) {
     if (binsToRender.length === 0) {
         if (firebaseSyncStatus === 'awaiting') {
             return `
                 <div class="empty-state-box awaiting">
-                    <div class="empty-state-icon"><i class='bx bx-loader-alt bx-spin'></i></div>
+                    <div class="empty-state-icon"><i class='bx bx-sync bx-spin'></i></div>
                     <h4>Awaiting Firebase Realtime Telemetry</h4>
-                    <p>Connecting to Firebase Realtime Database stream. Once live bin packets arrive, hardware telemetry cards will populate here.</p>
+                    <p>Connecting to Firebase Realtime Database stream. Once live bin packets arrive, hardware telemetry nodes will populate here.</p>
                 </div>
             `;
         }
@@ -503,47 +517,67 @@ function buildBinCardsHTML(binsToRender) {
         `;
     }
 
-    return binsToRender.map(bin => {
-        const status = getBinStatus(bin.fillLevel);
-        const binNumber = bin.id.replace("BIN-", "");
-
-        return `
-            <div class="bin-card status-${status.className}" 
-                 onclick="showBinDetails('${bin.id}')"
-                 title="Inspect hardware node ${bin.id}">
-                <div class="bin-card-top">
-                    <div class="bin-id-block">
-                        <span class="bin-sensor-tag"><i class='bx bx-chip'></i> ${bin.sensorId || 'ESP32'}</span>
-                        <h3>Bin ${binNumber}</h3>
-                    </div>
-                    <span class="status-badge ${status.className}">
-                        <span class="badge-dot"></span>
-                        ${status.label}
-                    </span>
-                </div>
-                <div class="bin-card-location">
-                    <i class='bx bx-map-pin'></i>
-                    <span>${bin.location}</span>
-                </div>
-                <div class="bin-card-meter">
-                    <div class="fill-bar">
-                        <div class="fill-progress ${status.className}" 
-                             style="width: ${bin.fillLevel}%"></div>
-                    </div>
-                    <div class="fill-text">
-                        <span class="fill-lbl">Ultrasonic Fill</span>
-                        <span class="percent ${status.className}">${bin.fillLevel}%</span>
-                    </div>
-                </div>
-                <div class="bin-card-footer">
-                    <span class="bin-ping"><i class='bx bx-time'></i> ${formatSensorTimestamp(bin.lastUpdated)}</span>
-                    <button class="bin-action-btn" onclick="event.stopPropagation(); showBinDetails('${bin.id}')">
-                        Inspect &rarr;
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
+    return `
+        <div class="bins-table-card">
+            <table class="bins-data-table">
+                <thead>
+                    <tr>
+                        <th>Bin ID</th>
+                        <th>Location</th>
+                        <th>Fill Level</th>
+                        <th>Status</th>
+                        <th>Microcontroller</th>
+                        <th>Last Reading</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${binsToRender.map(bin => {
+                        const status = getBinStatus(bin.fillLevel);
+                        const binNumber = bin.id.replace("BIN-", "");
+                        return `
+                            <tr onclick="showBinDetails('${bin.id}')" title="Inspect node ${bin.id}">
+                                <td>
+                                    <div class="table-bin-id">
+                                        <strong>Bin ${binNumber}</strong>
+                                        <span class="dim">${bin.id}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="table-loc"><i class='bx bx-map-pin'></i> ${bin.location}</span>
+                                </td>
+                                <td>
+                                    <div class="table-fill-cell">
+                                        <div class="table-fill-track">
+                                            <div class="table-fill-bar ${status.className}" style="width: ${bin.fillLevel}%"></div>
+                                        </div>
+                                        <span class="table-fill-val ${status.className}">${bin.fillLevel}%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge ${status.className}">
+                                        <span class="badge-dot"></span>
+                                        ${status.label}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="table-sensor-id">${bin.sensorId || 'ESP32'}</span>
+                                </td>
+                                <td>
+                                    <span class="table-timestamp"><i class='bx bx-time'></i> ${formatSensorTimestamp(bin.lastUpdated)}</span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <button class="table-inspect-btn" onclick="event.stopPropagation(); showBinDetails('${bin.id}')">
+                                        Inspect &rarr;
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
 }
 
 function renderBins(binsToRender) {
@@ -640,7 +674,7 @@ function renderAlerts() {
 }
 
 /* ============================================================
-   CAMPUS DISTANCE SYSTEM & AI MULTI-OBJECTIVE ROUTE PLANNER
+   CAMPUS DISTANCE SYSTEM & MULTI-OBJECTIVE ROUTE PLANNER
    ============================================================ */
 
 /**
@@ -659,8 +693,7 @@ function getNodePosition(node) {
 }
 
 /**
- * Computes a realistic small fixed distance (km) between any two campus nodes.
- * Scaling produces short hops between ~0.2 km (200m) and ~1.2 km (1200m).
+ * Computes a realistic distance (km) between campus nodes.
  */
 function getSegmentDistanceKm(nodeA, nodeB) {
     const pA = getNodePosition(nodeA);
@@ -673,12 +706,7 @@ function getSegmentDistanceKm(nodeA, nodeB) {
 
 /**
  * Multi-Objective Route Optimization Algorithm:
- * Evaluates candidate bins balancing:
- *   1. Overflow Urgency / Fill Percentage: Higher fill bins require urgent servicing.
- *   2. Proximity / Travel Distance: Minimizes deadhead travel mileage from current vehicle position.
- *
- * Algorithm chooses the next optimal stop by maximizing:
- *   OptimizationScore = (FillLevel * UrgencyWeight) / (DistanceKm * 45 + 10)
+ * Evaluates candidate bins balancing fill level urgency and transit distance.
  */
 function optimizeCollectionRoute(candidateBins) {
     if (!candidateBins || candidateBins.length === 0) return { sequencedRoute: [], finalNode: 'DEPOT', totalPickupDist: 0 };
@@ -698,19 +726,17 @@ function optimizeCollectionRoute(candidateBins) {
             const fill = Number(bin.fillLevel) || 0;
             const dist = getSegmentDistanceKm(currentPos, bin);
 
-            // Urgency factor exponentially rewards critical overflow risks based on thresholds
             let urgencyMultiplier = 1.0;
             if (fill >= thresholds.critical) {
-                urgencyMultiplier = 3.0; // Critical emergency priority
+                urgencyMultiplier = 3.0;
             } else if (fill >= thresholds.warning) {
-                urgencyMultiplier = 1.8; // High warning threshold
+                urgencyMultiplier = 1.8;
             } else if (fill >= thresholds.medium || fill > thresholds.normal) {
-                urgencyMultiplier = 1.2; // Moderate priority pickup
+                urgencyMultiplier = 1.2;
             } else {
-                urgencyMultiplier = 1.0; // Routine pickup
+                urgencyMultiplier = 1.0;
             }
 
-            // Balanced Multi-Objective Score: Higher fill increases score, higher distance penalizes
             const score = (fill * urgencyMultiplier) / (dist * 45 + 10);
 
             if (score > bestScore) {
@@ -737,8 +763,8 @@ function optimizeCollectionRoute(candidateBins) {
 }
 
 /**
- * buildRouteHTML — Connected multi-objective node graph:
- * Central Depot ──> [Optimized Bins (Distance + Fill%)] ──> Central Waste Facility
+ * buildRouteHTML — Priority sequenced route:
+ * Central Depot ──> [Optimized Bins] ──> Central Waste Facility
  */
 async function buildRouteHTML() {
     let routeData = null;
@@ -759,7 +785,6 @@ async function buildRouteHTML() {
         routingError = true;
     }
 
-    // Candidate bins for collection dispatch: bins that reached medium/collection threshold
     const dispatchThreshold = thresholds.medium;
     const eligibleBins = bins.filter(bin => Number(bin.fillLevel) >= dispatchThreshold);
 
@@ -837,15 +862,19 @@ async function buildRouteHTML() {
             </div>
 
             <div class="route-node-content">
-                <span class="route-badge depot">START POINT</span>
-                <span class="route-dist-badge origin"><i class='bx bx-play-circle'></i> 0.00 km</span>
+                <div class="route-node-header">
+                    <div class="route-badges-row">
+                        <span class="route-badge depot">ORIGIN</span>
+                        <span class="route-dist-badge"><i class='bx bx-play-circle'></i> 0.00 km</span>
+                    </div>
+                </div>
 
                 <div class="route-node-name">
                     Central Fleet Depot
                 </div>
 
                 <span class="route-node-sub">
-                    Collection vehicle departure &bull; Logistics check &bull; Dispatch initialization
+                    Collection vehicle departure &bull; Dispatch initialization
                 </span>
             </div>
         </div>
@@ -857,9 +886,7 @@ async function buildRouteHTML() {
         const binNumber = bin.id ? bin.id.replace("BIN-", "") : (index + 1);
 
         html += `
-            <div class="route-node ${status.className}"
-                 onclick="showBinDetails('${bin.id}')">
-
+            <div class="route-node ${status.className}" onclick="showBinDetails('${bin.id}')">
                 <div class="route-node-spine">
                     <span class="spine-icon ${status.className}">
                         ${index + 1}
@@ -882,7 +909,7 @@ async function buildRouteHTML() {
 
                     <div class="route-node-footer">
                         <span class="route-metric-crumb"><i class='bx bx-trip'></i> Cum: <strong>${step.cumulativeDist ?? '0.00'} km</strong></span>
-                        <span class="route-metric-crumb"><i class='bx bx-sort-up'></i> Urgency Score: <strong>${step.score ?? '—'}</strong></span>
+                        <span class="route-metric-crumb"><i class='bx bx-sort-up'></i> Score: <strong>${step.score ?? '—'}</strong></span>
                         <span><i class='bx bx-chip'></i> ${bin.sensorId || 'ESP32'}</span>
                         <span class="action-link">Inspect Node &rarr;</span>
                     </div>
@@ -901,15 +928,19 @@ async function buildRouteHTML() {
             </div>
 
             <div class="route-node-content">
-                <span class="route-badge depot">COLLECTION POINT</span>
-                <span class="route-dist-badge return"><i class='bx bx-navigation'></i> +${returnLegDist} km</span>
+                <div class="route-node-header">
+                    <div class="route-badges-row">
+                        <span class="route-badge depot">DESTINATION</span>
+                        <span class="route-dist-badge"><i class='bx bx-navigation'></i> +${returnLegDist} km</span>
+                    </div>
+                </div>
 
                 <div class="route-node-name">
                     Central Waste Facility
                 </div>
 
                 <span class="route-node-sub">
-                    Waste unloading, compaction &bull; Return to depot &bull; Total route: ${totalRouteDist} km
+                    Waste unloading, compaction &bull; Return &bull; Total route: ${totalRouteDist} km
                 </span>
             </div>
         </div>
@@ -969,12 +1000,13 @@ async function renderRoutePage() {
         if (distEl) distEl.textContent = `~${distanceValue.toFixed(1)} km`;
     }
 }
-function renderMapMarkersIn(mapBgSelector) {
-    const mapBg = document.querySelector(mapBgSelector);
-    if (!mapBg) return;
 
-    mapBg.querySelectorAll('.map-marker').forEach(m => m.remove());
-    mapBg.querySelectorAll('.map-empty-overlay').forEach(m => m.remove());
+/**
+ * renderLocationDirectory — Clean structured campus location list (proper replacement for fake CSS map).
+ */
+function renderLocationDirectory() {
+    const container = document.getElementById('mapPlaceholder');
+    if (!container) return;
 
     const mapNodeCountBadge = document.getElementById('mapNodeCountBadge');
     if (mapNodeCountBadge) {
@@ -982,55 +1014,69 @@ function renderMapMarkersIn(mapBgSelector) {
             mapNodeCountBadge.innerHTML = `<span class="node-ping-dot paused"></span> No Nodes Reporting`;
             mapNodeCountBadge.className = "map-node-count-badge awaiting";
         } else {
-            mapNodeCountBadge.innerHTML = `<span class="node-ping-dot"></span> ${bins.length} Active Node${bins.length !== 1 ? 's' : ''}`;
+            mapNodeCountBadge.innerHTML = `<span class="node-ping-dot"></span> ${bins.length} Active Nodes`;
             mapNodeCountBadge.className = "map-node-count-badge";
         }
     }
 
     if (bins.length === 0) {
-        const overlay = document.createElement('div');
-        overlay.className = 'map-empty-overlay';
-        overlay.innerHTML = `
-            <div class="map-empty-inner">
-                <i class='bx bx-sync bx-spin'></i>
-                <span>Awaiting telemetry &bull; No active devices reporting campus coordinates</span>
+        container.innerHTML = `
+            <div class="directory-empty-state">
+                <div class="directory-empty-icon"><i class='bx bx-sync bx-spin'></i></div>
+                <div class="directory-empty-text">
+                    <h4>Awaiting Sensor Telemetry</h4>
+                    <p>No active devices currently reporting campus locations. Campus nodes will appear once data arrives from Firebase.</p>
+                </div>
             </div>
         `;
-        mapBg.appendChild(overlay);
         return;
     }
 
-    bins.forEach(bin => {
-        const status = getBinStatus(bin.fillLevel);
-        const binNumber = bin.id.replace("BIN-", "");
-
-        const marker = document.createElement('div');
-        marker.className = `map-marker status-${status.className}`;
-        marker.style.top = `${bin.lat || 50}%`;
-        marker.style.left = `${bin.lng || 50}%`;
-        marker.title = `${bin.id} — ${bin.location} (${bin.fillLevel}%)`;
-        marker.onclick = () => showBinDetails(bin.id);
-
-        marker.innerHTML = `
-            <div class="marker-beacon ${status.className}">
-                <span class="beacon-center"><i class='bx bxs-trash'></i></span>
-            </div>
-            <div class="marker-tag">
-                <span class="tag-id">Bin ${binNumber}</span>
-                <span class="tag-fill ${status.className}">${bin.fillLevel}%</span>
-            </div>
-        `;
-
-        mapBg.appendChild(marker);
-    });
+    container.innerHTML = `
+        <div class="directory-list">
+            ${bins.map(bin => {
+                const status = getBinStatus(bin.fillLevel);
+                const binNum = bin.id.replace("BIN-", "");
+                return `
+                    <div class="directory-item status-${status.className}" onclick="showBinDetails('${bin.id}')" title="Inspect node ${bin.id}">
+                        <div class="directory-item-left">
+                            <div class="dir-icon-badge ${status.className}">
+                                <i class='bx bx-map-pin'></i>
+                            </div>
+                            <div class="dir-meta">
+                                <div class="dir-loc-title">${bin.location || 'Campus Facility'}</div>
+                                <div class="dir-sub-info">
+                                    <span class="dir-bin-id">Bin ${binNum}</span>
+                                    <span class="dir-sep">&bull;</span>
+                                    <span class="dir-sensor-id">${bin.sensorId || 'ESP32'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="directory-item-right">
+                            <div class="dir-fill-block">
+                                <div class="dir-fill-track">
+                                    <div class="dir-fill-bar ${status.className}" style="width: ${bin.fillLevel}%"></div>
+                                </div>
+                                <span class="dir-fill-pct ${status.className}">${bin.fillLevel}%</span>
+                            </div>
+                            <span class="dir-status-tag ${status.className}">${status.label}</span>
+                            <button class="dir-inspect-btn" onclick="event.stopPropagation(); showBinDetails('${bin.id}')">
+                                Inspect
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
 }
 
 function renderMapMarkers() {
-    renderMapMarkersIn('#mapPlaceholder .map-bg');
+    renderLocationDirectory();
 }
 
 /**
- * renderChartIn — Horizontal telemetry fill bars.
+ * renderChartIn — Horizontal telemetry fill bars for Analytics.
  */
 function renderChartIn(containerId) {
     const container = document.getElementById(containerId);
@@ -1065,12 +1111,10 @@ function renderChartIn(containerId) {
     }).join('');
 }
 
-
 /**
- * renderAIPage — Renders the dedicated AI Workspace with Overflow Forecasting and Route Optimization.
+ * renderAIPage — Renders the Fill-Level Estimate and Route Planning workspace.
  */
 function renderAIPage() {
-    // 1. AI Overflow Prediction Engine table
     const tbody = document.getElementById('aiPredictionBody');
     if (tbody) {
         if (bins.length === 0) {
@@ -1085,7 +1129,6 @@ function renderAIPage() {
                 const binNum = bin.id.replace("BIN-", "");
                 const fill = Number(bin.fillLevel) || 0;
 
-                // Rule-based threshold urgency estimation
                 let overflowEstimate = "—";
                 let estTime = "—";
                 if (fill >= thresholds.critical) {
@@ -1116,7 +1159,6 @@ function renderAIPage() {
         }
     }
 
-    // 2. Autonomous Dispatch Optimizer (Connected Waypoint Loop & Dispatch KPIs)
     renderRoutePage();
 }
 
@@ -1160,7 +1202,6 @@ function renderAnalyticsPage() {
     if (dCriticalVal) dCriticalVal.textContent = critical;
 }
 
-
 /**
  * renderSettingsPage — Hardware & configuration state.
  */
@@ -1172,7 +1213,6 @@ function renderSettingsPage() {
     const label = document.getElementById('currentThemeLabel');
     if (label) label.textContent = isDark ? 'Dark' : 'Light';
 
-    // Populate active threshold inputs & breakdown
     updateThresholdLabels();
 }
 
@@ -1207,17 +1247,19 @@ function renderAll(forceCountAnimation = false) {
 
 
 /* ============================================================
-   5. PAGE NAVIGATION & SWITCHING
+   4. PAGE NAVIGATION & SWITCHING
    ============================================================ */
 let currentPage = 'dashboard';
 
 function navigateToPage(pageName) {
     if (pageName === 'route') pageName = 'ai';
 
-    // Update header title based on current workspace
+    // Update header title and subtitle based on current workspace
     const headingEl = document.getElementById('pageTitleHeading');
-    if (headingEl && pageTitles[pageName]) {
-        headingEl.textContent = pageTitles[pageName].title;
+    const subtitleEl = document.getElementById('pageSubtitle');
+    if (pageTitles[pageName]) {
+        if (headingEl) headingEl.textContent = pageTitles[pageName].title;
+        if (subtitleEl) subtitleEl.textContent = pageTitles[pageName].subtitle;
     }
 
     document.querySelectorAll('.page').forEach(page => {
@@ -1258,7 +1300,7 @@ function navigateToPage(pageName) {
 
 
 /* ============================================================
-   6. FILTERING, SEARCH, MODAL INSPECTION & THEME
+   5. FILTERING, SEARCH, MODAL INSPECTION & THEME
    ============================================================ */
 function getFilteredBins(filterType, searchText) {
     let filtered = bins;
@@ -1323,7 +1365,7 @@ function showBinDetails(binId) {
 
     if (modalStat) {
         modalStat.textContent = status.label;
-        modalStat.style.color = `var(--status-${status.className === 'warning' ? 'warning' : (status.className === 'normal' ? 'normal' : status.className)})`;
+        modalStat.style.color = `var(--status-${status.className})`;
     }
 
     if (modalPrio) {
@@ -1419,17 +1461,12 @@ function saveThresholds() {
         console.warn("Could not persist thresholds to localStorage:", e);
     }
 
-    // Update dynamic threshold labels across all pages
     updateThresholdLabels();
-
-    // Re-render Dashboard, Bins, Alerts, and Analytics
     renderAll(true);
-
-    // Re-calculate Route Optimization
     generateRoute();
     renderRoutePage();
 
-    showThresholdFeedback("Threshold preferences updated! Dashboard, Smart Bins, and Route Optimization have synced.", "success");
+    showThresholdFeedback("Threshold preferences updated across the platform.", "success");
 }
 
 function resetThresholdsDefault() {
@@ -1443,7 +1480,7 @@ function resetThresholdsDefault() {
     generateRoute();
     renderRoutePage();
 
-    showThresholdFeedback("Thresholds reset to defaults (Normal: 40%, Medium: 60%, Warning: 80%, Critical: 90%).", "success");
+    showThresholdFeedback("Thresholds reset to defaults (Safe: 40%, Medium: 60%, Warning: 80%, Critical: 90%).", "success");
 }
 
 function updateThemeUI(isDark) {
@@ -1479,9 +1516,9 @@ function initTheme() {
         savedTheme = localStorage.getItem('swm-theme');
     } catch (e) {}
 
-    // Default to dark theme for modern IoT command center
-    let isDark = true;
-    if (savedTheme === 'light') isDark = false;
+    // Default to clean warm off-white light theme
+    let isDark = false;
+    if (savedTheme === 'dark') isDark = true;
 
     if (isDark) {
         document.body.classList.add('dark-theme');
@@ -1493,7 +1530,7 @@ function initTheme() {
 
 
 /* ============================================================
-   7. INITIALIZATION & EVENT HANDLERS
+   6. INITIALIZATION & EVENT HANDLERS
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
@@ -1598,4 +1635,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const settingsDarkModeToggle = document.getElementById('settingsDarkModeToggle');
     if (settingsDarkModeToggle) settingsDarkModeToggle.addEventListener('change', toggleTheme);
-});
+});
