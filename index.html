@@ -34,11 +34,11 @@
             <div class="nav-section-label">Monitoring</div>
             <a href="#" class="nav-link active" data-page="dashboard">
                 <i class='bx bxs-dashboard'></i>
-                <span>Dashboard</span>
+                <span>Overview</span>
             </a>
             <a href="#" class="nav-link" data-page="bins">
                 <i class='bx bxs-package'></i>
-                <span>Smart Bins</span>
+                <span>Bin Monitoring</span>
             </a>
 
             <div class="nav-section-label">Operations</div>
@@ -48,7 +48,7 @@
             </a>
             <a href="#" class="nav-link" data-page="ai">
                 <i class='bx bx-trip'></i>
-                <span>Route &amp; Forecast</span>
+                <span>Collection Route</span>
             </a>
 
             <div class="nav-section-label">System</div>
@@ -104,7 +104,7 @@
         <header class="main-header">
             <div class="header-left">
                 <div class="header-title-wrap">
-                    <h1 class="header-page-title" id="pageTitleHeading">Campus Waste Monitoring</h1>
+                    <h1 class="header-page-title" id="pageTitleHeading">Overview</h1>
                     <span class="telemetry-chip-tag" id="headerConnectionBadge"><i class='bx bx-sync'></i> Awaiting Data</span>
                 </div>
             </div>
@@ -130,91 +130,98 @@
         ============================================================ -->
         <div class="page active" id="page-dashboard">
 
-            <!-- Dashboard Operations Header Bar -->
-            <div class="dashboard-header-bar">
-                <div class="dashboard-header-left">
-                    <h2 class="dashboard-main-heading">Operations Overview</h2>
-                    <span class="dashboard-main-subheading">Live ultrasonic sensor telemetry across campus collection points</span>
-                </div>
-                <div class="dashboard-header-stats">
-                    <span class="d-stat-chip"><i class='bx bx-chip'></i> <strong id="headerFleetVal">—</strong></span>
-                    <span class="d-stat-chip"><i class='bx bx-shield-quarter'></i> Fleet State: <strong id="headerHealthVal" class="health-good">Waiting</strong></span>
-                </div>
-            </div>
-
-            <!-- Summary Metric Cards -->
-            <section class="summary-cards">
-                <div class="card summary-card total">
-                    <div class="card-top-row">
-                        <div class="card-icon"><i class='bx bxs-package'></i></div>
-                        <span class="card-metric-pill">Monitored</span>
+            <!-- Three Meaningful Summary Hero Metrics -->
+            <section class="summary-hero-row">
+                <div class="hero-metric-card" id="heroCardMonitored">
+                    <div class="hmc-header">
+                        <span class="hmc-label">Monitored Bins</span>
+                        <span class="hmc-pill"><i class='bx bx-package'></i> Fleet</span>
                     </div>
-                    <div class="card-info">
-                        <div class="stat-number-row">
-                            <h3 id="totalBins">0</h3>
-                        </div>
-                        <p>Total Monitored Bins</p>
+                    <div class="hmc-body">
+                        <h3 class="hmc-value" id="totalBins">0</h3>
+                        <p class="hmc-desc">Total deployed hardware nodes</p>
                     </div>
                 </div>
 
-                <div class="card summary-card normal">
-                    <div class="card-top-row">
-                        <div class="card-icon"><i class='bx bxs-check-circle'></i></div>
-                        <span class="card-metric-pill normal" id="kpiPillNormal">Safe &le; 40%</span>
+                <div class="hero-metric-card attention-card" id="heroCardAction">
+                    <div class="hmc-header">
+                        <span class="hmc-label">Needing Collection</span>
+                        <span class="hmc-pill warning" id="actionNeededBadge">Action Required</span>
                     </div>
-                    <div class="card-info">
-                        <div class="stat-number-row">
-                            <h3 id="normalBins">0</h3>
+                    <div class="hmc-body">
+                        <div class="hmc-split-row">
+                            <h3 class="hmc-value critical" id="criticalBins">0</h3>
+                            <span class="hmc-split-sub">+ <strong id="nearlyFullBins">0</strong> nearly full</span>
                         </div>
-                        <p>Normal Fill Level</p>
+                        <p class="hmc-desc">Bins exceeding collection thresholds</p>
                     </div>
                 </div>
 
-                <div class="card summary-card medium">
-                    <div class="card-top-row">
-                        <div class="card-icon"><i class='bx bxs-adjust-alt'></i></div>
-                        <span class="card-metric-pill medium" id="kpiPillMedium">Medium 41–79%</span>
+                <div class="hero-metric-card" id="heroCardSensors">
+                    <div class="hmc-header">
+                        <span class="hmc-label">Sensors Online</span>
+                        <span class="hmc-pill normal" id="sensorsStatusPill"><i class='bx bx-wifi'></i> Live</span>
                     </div>
-                    <div class="card-info">
-                        <div class="stat-number-row">
-                            <h3 id="mediumBins">0</h3>
-                        </div>
-                        <p>Medium Fill Level</p>
-                    </div>
-                </div>
-
-                <div class="card summary-card warning">
-                    <div class="card-top-row">
-                        <div class="card-icon"><i class='bx bxs-error'></i></div>
-                        <span class="card-metric-pill warning" id="kpiPillWarning">Warning 80–89%</span>
-                    </div>
-                    <div class="card-info">
-                        <div class="stat-number-row">
-                            <h3 id="nearlyFullBins">0</h3>
-                        </div>
-                        <p>Nearly Full (Schedule Collection)</p>
-                    </div>
-                </div>
-
-                <div class="card summary-card critical">
-                    <div class="card-top-row">
-                        <div class="card-icon"><i class='bx bxs-error-circle'></i></div>
-                        <span class="card-metric-pill critical" id="kpiPillCritical">Critical &ge; 90%</span>
-                    </div>
-                    <div class="card-info">
-                        <div class="stat-number-row">
-                            <h3 id="criticalBins">0</h3>
-                        </div>
-                        <p>Critical Overflow Dispatch</p>
+                    <div class="hmc-body">
+                        <h3 class="hmc-value" id="headerFleetVal">—</h3>
+                        <p class="hmc-desc"><span id="headerHealthVal" class="health-good">Awaiting</span> &bull; Telemetry stream</p>
                     </div>
                 </div>
             </section>
 
-            <!-- Dashboard Main Arena: Campus Schematic & Priority Alerts -->
-            <div class="operations-main-arena">
+            <!-- Compact Status Tier Strip -->
+            <section class="status-tier-strip">
+                <span class="tier-strip-title">Status Breakdown:</span>
+                <div class="tier-strip-group">
+                    <div class="tier-strip-item normal">
+                        <span class="tier-dot normal"></span>
+                        <span class="tier-name" id="kpiPillNormal">Safe &le; 40%</span>
+                        <strong class="tier-val" id="normalBins">0</strong>
+                    </div>
+                    <div class="tier-strip-item medium">
+                        <span class="tier-dot medium"></span>
+                        <span class="tier-name" id="kpiPillMedium">Medium 41–79%</span>
+                        <strong class="tier-val" id="mediumBins">0</strong>
+                    </div>
+                    <div class="tier-strip-item warning">
+                        <span class="tier-dot warning"></span>
+                        <span class="tier-name" id="kpiPillWarning">Warning 80–89%</span>
+                        <strong class="tier-val" id="tierWarningVal">0</strong>
+                    </div>
+                    <div class="tier-strip-item critical">
+                        <span class="tier-dot critical"></span>
+                        <span class="tier-name" id="kpiPillCritical">Critical &ge; 90%</span>
+                        <strong class="tier-val" id="tierCriticalVal">0</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Prominent Collection Priorities Section -->
+            <section class="priority-section">
+                <div class="arena-card alerts-arena-card prominent">
+                    <div class="arena-card-header">
+                        <div class="arena-title-group">
+                            <h2 class="section-title"><i class='bx bxs-bell'></i> Collection Priorities</h2>
+                            <span class="section-subtitle">Bins requiring immediate emptying or collection scheduling</span>
+                        </div>
+                        <div class="arena-header-actions">
+                            <span class="arena-tag normal" id="alertCountBadge">All Nominal</span>
+                            <button class="btn-ghost-sm" onclick="navigateToPage('ai')" title="View collection route">
+                                <i class='bx bx-trip'></i> Plan Route
+                            </button>
+                        </div>
+                    </div>
+                    <div class="alerts-container" id="alertsContainer">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Secondary Operations Arena: Campus Schematic & Supporting Info -->
+            <div class="operations-secondary-grid">
                 
-                <!-- Campus Schematic Map -->
-                <section class="arena-map-section">
+                <!-- Campus Demonstration Layout -->
+                <section class="secondary-map-col">
                     <div class="arena-card map-arena-card">
                         <!-- Top Map Controls Bar -->
                         <div class="map-command-bar">
@@ -225,7 +232,7 @@
                             <div class="map-command-right">
                                 <span class="map-note-text">Schematic View</span>
                                 <button class="map-zoom-btn" onclick="navigateToPage('bins')" title="Inspect all bins">
-                                    <i class='bx bx-list-ul'></i> View All Nodes
+                                    <i class='bx bx-list-ul'></i> All Nodes
                                 </button>
                             </div>
                         </div>
@@ -235,7 +242,7 @@
                             <div class="map-bg">
                                 <div class="map-grid-overlay"></div>
                                 <div class="map-watermark-label">
-                                    Campus Test Area &bull; Fixed Sensor Schematic
+                                    Demonstration Schematic &bull; Fixed Test Coordinates
                                 </div>
                                 
                                 <!-- Schematic Campus Pathways -->
@@ -274,26 +281,68 @@
                                 <span class="legend-item" id="legendItemWarning"><span class="legend-dot warning"></span> <span id="legendTextWarning">Warning (80–89%)</span></span>
                                 <span class="legend-item" id="legendItemCritical"><span class="legend-dot critical"></span> <span id="legendTextCritical">Critical (&ge;90%)</span></span>
                             </div>
-                            <span class="map-status-footnote"><i class='bx bx-info-circle'></i> Marker positions indicate testing locations on campus.</span>
+                            <span class="map-status-footnote"><i class='bx bx-info-circle'></i> Marker positions indicate test locations on campus.</span>
                         </div>
                     </div>
                 </section>
 
-                <!-- Priority Action Alerts -->
-                <section class="arena-sidebar-section">
-                    <div class="arena-card alerts-arena-card">
+                <!-- Supporting Information: Capacity & Sensor Status -->
+                <section class="secondary-info-col">
+                    <div class="arena-card supporting-info-card">
                         <div class="arena-card-header">
                             <div class="arena-title-group">
-                                <h2 class="section-title"><i class='bx bxs-bell'></i> Collection Alerts</h2>
-                                <span class="section-subtitle">Bins requiring maintenance or scheduling</span>
+                                <h2 class="section-title"><i class='bx bx-pulse'></i> Operational Telemetry</h2>
+                                <span class="section-subtitle">Hardware telemetry stream &amp; node connectivity</span>
                             </div>
-                            <span class="arena-tag normal" id="alertCountBadge">All Nominal</span>
                         </div>
-                        <div class="alerts-container" id="alertsContainer">
-                            <!-- Populated dynamically by JS -->
+                        <div class="supporting-info-body">
+                            <!-- Telemetry stats -->
+                            <div class="info-row">
+                                <span class="info-label"><i class='bx bx-chip'></i> Prototype Sensor (BIN-01)</span>
+                                <span class="info-val highlight" id="esp32StatusText">STANDBY</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class='bx bx-cloud'></i> Cloud Database</span>
+                                <span class="info-val">Firebase RTDB</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class='bx bx-check-shield'></i> System Fleet State</span>
+                                <span class="info-val" id="dashFleetStateText">Waiting</span>
+                            </div>
+
+                            <!-- Quick distribution preview -->
+                            <div class="dash-quick-dist">
+                                <div class="dall-label-row">
+                                    <span class="dall-label">Campus Capacity Overview</span>
+                                    <button class="dash-text-link" onclick="navigateToPage('analytics')">View Analytics &rarr;</button>
+                                </div>
+                                <div class="dash-dist-bars" id="dashMiniDistBars">
+                                    <div class="mini-bar-row">
+                                        <span class="mini-bar-name">Safe Fill</span>
+                                        <div class="mini-bar-track"><div class="mini-bar-fill normal" id="miniDistNormal" style="width:0%"></div></div>
+                                        <span class="mini-bar-num" id="miniDistNormalVal">0</span>
+                                    </div>
+                                    <div class="mini-bar-row">
+                                        <span class="mini-bar-name">Medium</span>
+                                        <div class="mini-bar-track"><div class="mini-bar-fill medium" id="miniDistMedium" style="width:0%"></div></div>
+                                        <span class="mini-bar-num" id="miniDistMediumVal">0</span>
+                                    </div>
+                                    <div class="mini-bar-row">
+                                        <span class="mini-bar-name">Nearly Full</span>
+                                        <div class="mini-bar-track"><div class="mini-bar-fill warning" id="miniDistWarning" style="width:0%"></div></div>
+                                        <span class="mini-bar-num" id="miniDistWarningVal">0</span>
+                                    </div>
+                                    <div class="mini-bar-row">
+                                        <span class="mini-bar-name">Critical</span>
+                                        <div class="mini-bar-track"><div class="mini-bar-fill critical" id="miniDistCritical" style="width:0%"></div></div>
+                                        <span class="mini-bar-num" id="miniDistCriticalVal">0</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
+
             </div>
 
         </div>
@@ -479,22 +528,22 @@
                         <div class="route-kpi-bar ai-route-kpi-bar">
                             <div class="route-kpi-item">
                                 <span class="rk-lbl">Total Stops</span>
-                                <span class="rk-val" id="routeStops">0</span>
+                                <span class="rk-val" id="routeStops">—</span>
                             </div>
                             <div class="rk-sep"></div>
                             <div class="route-kpi-item">
                                 <span class="rk-lbl">Critical Stops</span>
-                                <span class="rk-val critical" id="routeCritical">0</span>
+                                <span class="rk-val critical" id="routeCritical">—</span>
                             </div>
                             <div class="rk-sep"></div>
                             <div class="route-kpi-item">
                                 <span class="rk-lbl">Est. Time</span>
-                                <span class="rk-val" id="routeETA">~0 min</span>
+                                <span class="rk-val" id="routeETA">—</span>
                             </div>
                             <div class="rk-sep"></div>
                             <div class="route-kpi-item">
                                 <span class="rk-lbl">Est. Distance</span>
-                                <span class="rk-val" id="routeDistance">~0.0 km</span>
+                                <span class="rk-val" id="routeDistance">—</span>
                             </div>
                         </div>
 

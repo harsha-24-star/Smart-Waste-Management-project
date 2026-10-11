@@ -654,73 +654,50 @@ a {
 }
 
 /* ============================================================
-   6. DASHBOARD SUMMARY CARDS (FLEET METRICS)
+   6. DASHBOARD SUMMARY HERO METRICS & STATUS BREAKDOWN
    ============================================================ */
-.summary-cards {
+.summary-hero-row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.85rem;
 }
 
-.card.summary-card {
+.hero-metric-card {
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    padding: 1rem;
-    transition: transform var(--transition), border-color var(--transition);
+    padding: 1.15rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
     box-shadow: var(--shadow-sm);
+    transition: border-color var(--transition);
 }
 
-.card.summary-card:hover {
+.hero-metric-card:hover {
     border-color: var(--border-strong);
 }
 
-.card-top-row {
+.hero-metric-card.attention-card {
+    border-left: 3px solid var(--status-warning);
+}
+
+.hmc-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
 }
 
-.card-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.15rem;
-    background: var(--bg-surface-elevated);
+.hmc-label {
+    font-size: 0.8rem;
+    font-weight: 600;
     color: var(--text-secondary);
+    letter-spacing: -0.01em;
 }
 
-.summary-card.total .card-icon {
-    background: var(--accent-soft);
-    color: var(--accent);
-}
-
-.summary-card.normal .card-icon {
-    background: var(--status-normal-bg);
-    color: var(--status-normal);
-}
-
-.summary-card.medium .card-icon {
-    background: var(--status-medium-bg);
-    color: var(--status-medium);
-}
-
-.summary-card.warning .card-icon {
-    background: var(--status-warning-bg);
-    color: var(--status-warning);
-}
-
-.summary-card.critical .card-icon {
-    background: var(--status-critical-bg);
-    color: var(--status-critical);
-}
-
-.card-metric-pill {
+.hmc-pill {
     font-size: 0.68rem;
     font-weight: 600;
     padding: 0.15rem 0.5rem;
@@ -728,55 +705,325 @@ a {
     background: var(--bg-surface-elevated);
     color: var(--text-secondary);
     border: 1px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 
-.card-metric-pill.normal {
+.hmc-pill.normal {
     background: var(--status-normal-bg);
     color: var(--status-normal);
     border-color: var(--status-normal-border);
 }
 
-.card-metric-pill.medium {
-    background: var(--status-medium-bg);
-    color: var(--status-medium);
-    border-color: var(--status-medium-border);
-}
-
-.card-metric-pill.warning {
+.hmc-pill.warning {
     background: var(--status-warning-bg);
     color: var(--status-warning);
     border-color: var(--status-warning-border);
 }
 
-.card-metric-pill.critical {
+.hmc-pill.critical {
     background: var(--status-critical-bg);
     color: var(--status-critical);
     border-color: var(--status-critical-border);
 }
 
-.card-info .stat-number-row h3 {
-    font-size: 1.65rem;
+.hmc-pill.awaiting {
+    background: var(--bg-surface-elevated);
+    color: var(--text-muted);
+}
+
+.hmc-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.hmc-value {
+    font-size: 2rem;
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.1;
     color: var(--text-primary);
     font-family: var(--font-mono);
 }
 
-.card-info p {
-    font-size: 0.78rem;
+.hmc-value.critical {
+    color: var(--status-critical);
+}
+
+.hmc-split-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.hmc-split-sub {
+    font-size: 0.8rem;
     color: var(--text-secondary);
-    margin-top: 0.25rem;
+}
+
+.hmc-split-sub strong {
+    color: var(--status-warning);
+    font-family: var(--font-mono);
+}
+
+.hmc-desc {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+}
+
+/* Compact Status Tier Strip */
+.status-tier-strip {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.75rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.tier-strip-title {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.tier-strip-group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.tier-strip-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.tier-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.tier-dot.normal { background: var(--status-normal); }
+.tier-dot.medium { background: var(--status-medium); }
+.tier-dot.warning { background: var(--status-warning); }
+.tier-dot.critical { background: var(--status-critical); }
+
+.tier-name {
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
+.tier-val {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Prominent Collection Priorities Section */
+.priority-section {
+    margin-bottom: 1.25rem;
+}
+
+.alerts-arena-card.prominent {
+    height: auto;
+    max-height: 320px;
+}
+
+.arena-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.arena-tag.awaiting {
+    background: var(--bg-surface-elevated);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+}
+
 /* ============================================================
-   7. OPERATIONS MAIN ARENA: MAP & ALERTS
+   7. OPERATIONS SECONDARY ARENA: CAMPUS MAP & SUPPORTING INFO
    ============================================================ */
-.operations-main-arena {
+.operations-secondary-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1.4fr 1fr;
     gap: 1rem;
     margin-bottom: 1.5rem;
+}
+
+.secondary-map-col .map-arena-card {
+    height: 420px;
+}
+
+.secondary-info-col .supporting-info-card {
+    height: 420px;
+    display: flex;
+    flex-direction: column;
+}
+
+.supporting-info-body {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    overflow-y: auto;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.info-label {
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.info-val {
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+}
+
+.info-val.connected {
+    color: var(--status-normal);
+}
+
+.info-val.disconnected {
+    color: var(--status-warning);
+}
+
+.info-val.critical {
+    color: var(--status-critical);
+}
+
+.dash-quick-dist {
+    margin-top: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.dall-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dall-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.dash-text-link {
+    font-size: 0.72rem;
+    color: var(--accent);
+    background: none;
+    border: none;
+    padding: 0;
+    font-weight: 600;
+}
+
+.dash-text-link:hover {
+    text-decoration: underline;
+}
+
+.dash-dist-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mini-bar-row {
+    display: grid;
+    grid-template-columns: 85px 1fr 20px;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.72rem;
+}
+
+.mini-bar-name {
+    color: var(--text-muted);
+}
+
+.mini-bar-track {
+    height: 6px;
+    background: var(--bg-surface-elevated);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.mini-bar-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+}
+
+.mini-bar-fill.normal { background: var(--status-normal); }
+.mini-bar-fill.medium { background: var(--status-medium); }
+.mini-bar-fill.warning { background: var(--status-warning); }
+.mini-bar-fill.critical { background: var(--status-critical); }
+
+.mini-bar-num {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+/* Map Empty Overlay */
+.map-empty-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 20, 25, 0.75);
+    z-index: 25;
+    backdrop-filter: blur(2px);
+}
+
+.map-empty-inner {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-md);
+}
+
+.node-ping-dot.paused {
+    background: var(--text-dim);
+}
+
+.map-node-count-badge.awaiting {
+    color: var(--text-muted);
+    background: var(--bg-surface-elevated);
+    border-color: var(--border);
 }
 
 .arena-card {
@@ -2206,21 +2453,34 @@ a {
 }
 
 .empty-route-state {
-    padding: 2rem 1rem;
+    padding: 2.25rem 1rem;
     text-align: center;
     color: var(--text-secondary);
 }
 
 .empty-route-state i {
-    font-size: 2rem;
+    font-size: 2.2rem;
     color: var(--status-normal);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.65rem;
+    display: inline-block;
+}
+
+.empty-route-state.awaiting i {
+    color: var(--accent);
+}
+
+.empty-route-state h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
 }
 
 .empty-route-state p {
     font-size: 0.78rem;
-    max-width: 320px;
+    max-width: 380px;
     margin: 0 auto;
+    line-height: 1.45;
 }
 
 /* ============================================================
@@ -2711,16 +2971,17 @@ a {
 
 /* Tablet & Medium Displays (<= 1024px) */
 @media (max-width: 1024px) {
-    .summary-cards {
+    .summary-hero-row {
         grid-template-columns: repeat(3, 1fr);
     }
 
-    .operations-main-arena {
+    .operations-secondary-grid {
         grid-template-columns: 1fr;
     }
 
-    .arena-sidebar-section .alerts-arena-card {
-        height: 340px;
+    .secondary-map-col .map-arena-card,
+    .secondary-info-col .supporting-info-card {
+        height: 380px;
     }
 
     .ai-modules-grid {
@@ -2800,57 +3061,50 @@ a {
         padding: 1rem 0.85rem;
     }
 
-    /* Dashboard Header Bar on Mobile */
-    .dashboard-header-bar {
+    /* Hero Summary Metrics on Mobile */
+    .summary-hero-row {
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .hero-metric-card {
+        padding: 0.9rem 1rem;
+    }
+
+    .hmc-value {
+        font-size: 1.6rem;
+    }
+
+    /* Status Tier Strip on Mobile */
+    .status-tier-strip {
+        padding: 0.65rem 0.85rem;
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.65rem;
-        margin-bottom: 1rem;
-        padding-bottom: 0.65rem;
-    }
-
-    .dashboard-main-heading {
-        font-size: 1.05rem;
-    }
-
-    .dashboard-main-subheading {
-        font-size: 0.74rem;
-    }
-
-    .dashboard-header-stats {
-        width: 100%;
-        display: flex;
         gap: 0.5rem;
+        margin-bottom: 1rem;
     }
 
-    .d-stat-chip {
-        flex: 1;
-        justify-content: center;
-        font-size: 0.75rem;
-        padding: 0.35rem 0.5rem;
-    }
-
-    /* Summary Cards: 1 Top Span + 2x2 Grid Below */
-    .summary-cards {
+    .tier-strip-group {
+        display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.65rem;
-        margin-bottom: 1.25rem;
+        gap: 0.5rem 1rem;
+        width: 100%;
     }
 
-    .summary-card.total {
-        grid-column: 1 / -1;
+    /* Operations Secondary Grid on Mobile */
+    .operations-secondary-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
 
-    .card.summary-card {
-        padding: 0.85rem;
+    .secondary-map-col .map-arena-card {
+        height: 320px;
     }
 
-    .card-info .stat-number-row h3 {
-        font-size: 1.4rem;
-    }
-
-    .card-info p {
-        font-size: 0.72rem;
+    .secondary-info-col .supporting-info-card {
+        height: auto;
+        max-height: 400px;
     }
 
     /* Schematic Map Card on Mobile */

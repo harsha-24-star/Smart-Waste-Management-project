@@ -132,42 +132,41 @@ binsRef.on("value", (snapshot) => {
 // ============================================================
 
 function updateESP32Status() {
-
     const statusText = document.getElementById("esp32StatusText");
-
     if (!statusText) return;
 
-    // BIN-01 is the ESP32 currently connected to this system
+    // BIN-01 is the ESP32 hardware prototype
     const bin = bins.find(b => b.id === "BIN-01");
 
     if (!bin || !bin.lastUpdated) {
-        statusText.textContent = "ESP32 DISCONNECTED";
+        statusText.textContent = "OFFLINE";
+        statusText.className = "info-val disconnected";
         return;
     }
 
     const lastUpdate = new Date(bin.lastUpdated).getTime();
     const now = Date.now();
-
     const age = now - lastUpdate;
 
-    // Consider ESP32 connected if a reading arrived
-    // within the last 15 seconds.
-    if (age <= 5000) {
-        statusText.textContent = "ESP32 CONNECTED";
+    // Connected if telemetry received within last 15 seconds
+    if (age <= 15000) {
+        statusText.textContent = "ONLINE (STREAMING)";
+        statusText.className = "info-val connected";
     } else {
-        statusText.textContent = "ESP32 DISCONNECTED";
+        statusText.textContent = "STANDBY (STALE)";
+        statusText.className = "info-val disconnected";
     }
 }
 
-// Check the ESP32 status every 2 seconds
-setInterval(updateESP32Status, 50);
+// Check ESP32 status every 2 seconds
+setInterval(updateESP32Status, 2000);
 
 const pageTitles = {
-    dashboard: { title: "Campus Waste Monitoring",        subtitle: "Real-time ultrasonic telemetry and bin status across campus" },
-    bins:      { title: "Monitored Waste Bins",          subtitle: "Individual bin fill levels, location details, and ultrasonic sensor telemetry" },
-    analytics: { title: "Telemetry & Capacity Analytics", subtitle: "Fill distribution across active bins and campus capacity breakdown" },
-    ai:        { title: "Route Planning & Fill Forecast", subtitle: "Rule-based collection route optimization and threshold-based fill projections" },
-    settings:  { title: "System Configuration & Thresholds", subtitle: "Adjust fill-level category thresholds and review cloud sync status" },
+    dashboard: { title: "Overview", subtitle: "Real-time ultrasonic sensor monitoring across campus" },
+    bins:      { title: "Bin Monitoring", subtitle: "Individual node telemetry, fill levels, and sensor health" },
+    analytics: { title: "Analytics", subtitle: "Fill-level distribution and campus capacity breakdown" },
+    ai:        { title: "Collection Route", subtitle: "Rule-based collection route sequencing and horizon projections" },
+    settings:  { title: "Settings", subtitle: "System thresholds, theme preferences, and telemetry status" },
 };
 
 
@@ -366,7 +365,7 @@ function animateCounter(elemId, targetValue, duration = 250, forceFromZero = fal
    ============================================================ */
 
 /**
- * updateSummary — Updates header stats & the 5 executive summary cards (Total, Normal, Medium, Warning, Critical).
+ * updateSummary — Updates the 3 hero summary metrics, status tier breakdown, and supporting telemetry.
  */
 function updateSummary(forceFromZero = false) {
     let normal = 0, medium = 0, warning = 0, critical = 0;
@@ -388,6 +387,30 @@ function updateSummary(forceFromZero = false) {
     animateCounter('mediumBins', medium, 250, forceFromZero);
     animateCounter('nearlyFullBins', warning, 250, forceFromZero);
     animateCounter('criticalBins', critical, 250, forceFromZero);
+
+    // Sync status tier strip counts
+    const tierWarnEl = document.getElementById('tierWarningVal');
+    if (tierWarnEl) tierWarnEl.textContent = warning;
+    const tierCritEl = document.getElementById('tierCriticalVal');
+    if (tierCritEl) tierCritEl.textContent = critical;
+
+    // Sync Action Required badge on Hero Card 2
+    const actionBadge = document.getElementById('actionNeededBadge');
+    if (actionBadge) {
+        if (totalCount === 0) {
+            actionBadge.textContent = "Awaiting Data";
+            actionBadge.className = "hmc-pill awaiting";
+        } else if (critical > 0) {
+            actionBadge.textContent = `${critical} Critical`;
+            actionBadge.className = "hmc-pill critical";
+        } else if (warning > 0) {
+            actionBadge.textContent = `${warning} Scheduled`;
+            actionBadge.className = "hmc-pill warning";
+        } else {
+            actionBadge.textContent = "All Nominal";
+            actionBadge.className = "hmc-pill normal";
+        }
+    }
 
     // Sync metric pill threshold texts with current active thresholds
     updateThresholdLabels();
@@ -416,13 +439,45 @@ function updateSummary(forceFromZero = false) {
         }
     }
 
-    // Radial ring (safe normal ratio)
-    const normalRing = document.getElementById('normalRingProgress');
-    if (normalRing && totalCount > 0) {
-        const pct = normal / totalCount;
-        const offset = Math.max(0, Math.round(88 * (1 - pct)));
-        normalRing.style.strokeDashoffset = offset;
+    // Dashboard supporting info: system fleet state text
+    const dashFleetState = document.getElementById('dashFleetStateText');
+    if (dashFleetState) {
+        if (totalCount === 0) {
+            dashFleetState.textContent = "Awaiting Telemetry";
+            dashFleetState.className = "info-val";
+        } else if (critical > 0) {
+            dashFleetState.textContent = "Critical Overflows Reported";
+            dashFleetState.className = "info-val critical";
+        } else if (warning > 0) {
+            dashFleetState.textContent = "Collection Pickups Scheduled";
+            dashFleetState.className = "info-val warning";
+        } else {
+            dashFleetState.textContent = "Nominal Operation (Safe)";
+            dashFleetState.className = "info-val connected";
+        }
     }
+
+    // Mini distribution bars on overview
+    const totalDist = totalCount || 1;
+    const mdNorm = document.getElementById('miniDistNormal');
+    const mdMed = document.getElementById('miniDistMedium');
+    const mdWarn = document.getElementById('miniDistWarning');
+    const mdCrit = document.getElementById('miniDistCritical');
+
+    if (mdNorm) mdNorm.style.width = totalCount > 0 ? `${(normal / totalDist) * 100}%` : `0%`;
+    if (mdMed) mdMed.style.width = totalCount > 0 ? `${(medium / totalDist) * 100}%` : `0%`;
+    if (mdWarn) mdWarn.style.width = totalCount > 0 ? `${(warning / totalDist) * 100}%` : `0%`;
+    if (mdCrit) mdCrit.style.width = totalCount > 0 ? `${(critical / totalDist) * 100}%` : `0%`;
+
+    const mdNormVal = document.getElementById('miniDistNormalVal');
+    const mdMedVal = document.getElementById('miniDistMediumVal');
+    const mdWarnVal = document.getElementById('miniDistWarningVal');
+    const mdCritVal = document.getElementById('miniDistCriticalVal');
+
+    if (mdNormVal) mdNormVal.textContent = normal;
+    if (mdMedVal) mdMedVal.textContent = medium;
+    if (mdWarnVal) mdWarnVal.textContent = warning;
+    if (mdCritVal) mdCritVal.textContent = critical;
 }
 
 /**
@@ -510,32 +565,52 @@ function renderAlerts() {
     const container = document.getElementById('alertsContainer');
     if (!container) return;
 
+    const alertCountBadge = document.getElementById('alertCountBadge');
+
+    // 1. Awaiting data state (No sensor telemetry received yet)
+    if (bins.length === 0) {
+        if (alertCountBadge) {
+            alertCountBadge.textContent = "Awaiting Telemetry";
+            alertCountBadge.className = 'arena-tag awaiting';
+        }
+        container.innerHTML = `
+            <div class="no-alerts-card awaiting">
+                <div class="no-alerts-icon"><i class='bx bx-sync bx-spin'></i></div>
+                <div class="no-alerts-content">
+                    <h4>Waiting for Sensor Telemetry</h4>
+                    <p>No sensor nodes are currently reporting. Live collection alerts will populate once hardware telemetry arrives from Firebase.</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
     const alertBins = bins
         .filter(bin => Number(bin.fillLevel) >= thresholds.warning)
         .sort((a, b) => Number(b.fillLevel) - Number(a.fillLevel));
 
-    const alertCountBadge = document.getElementById('alertCountBadge');
-    if (alertCountBadge) {
-        if (alertBins.length > 0) {
-            alertCountBadge.textContent = `${alertBins.length} Requires Action`;
-            alertCountBadge.className = 'arena-tag critical';
-        } else {
+    // 2. Telemetry present, all bins below warning threshold
+    if (alertBins.length === 0) {
+        if (alertCountBadge) {
             alertCountBadge.textContent = "All Nominal";
             alertCountBadge.className = 'arena-tag normal';
         }
-    }
-
-    if (alertBins.length === 0) {
         container.innerHTML = `
             <div class="no-alerts-card">
                 <div class="no-alerts-icon"><i class='bx bx-check-shield'></i></div>
                 <div class="no-alerts-content">
                     <h4>All Campus Bins Within Safe Limits</h4>
-                    <p>No critical fill or capacity warning thresholds exceeded (&lt;${thresholds.warning}%). Realtime ultrasonic monitoring is actively scanning.</p>
+                    <p>All ${bins.length} monitored campus bins are below the collection threshold (<${thresholds.warning}%). No urgent collection dispatch is required.</p>
                 </div>
             </div>
         `;
         return;
+    }
+
+    // 3. One or more bins requiring collection action
+    if (alertCountBadge) {
+        alertCountBadge.textContent = `${alertBins.length} Action Needed`;
+        alertCountBadge.className = 'arena-tag critical';
     }
 
     container.innerHTML = alertBins.map(bin => {
@@ -546,8 +621,7 @@ function renderAlerts() {
             <div class="alert-item ${isCritical ? 'critical' : 'warning'}" onclick="showBinDetails('${bin.id}')">
                 <div class="alert-left-meta">
                     <span class="alert-status-pill ${isCritical ? 'critical' : 'warning'}">
-                        <span class="alert-pulse-ring"></span>
-                        ${isCritical ? 'CRITICAL DISPATCH' : 'CAPACITY WARNING'}
+                        ${isCritical ? 'CRITICAL OVERFLOW' : 'CAPACITY WARNING'}
                     </span>
                     <span class="alert-bin-name">Bin ${binNumber} &bull; ${bin.location}</span>
                     <span class="alert-ping-time"><i class='bx bx-time'></i> ${formatSensorTimestamp(bin.lastUpdated)}</span>
@@ -667,7 +741,8 @@ function optimizeCollectionRoute(candidateBins) {
  * Central Depot ──> [Optimized Bins (Distance + Fill%)] ──> Central Waste Facility
  */
 async function buildRouteHTML() {
-    let routeData;
+    let routeData = null;
+    let routingError = false;
 
     try {
         const response = await fetch(
@@ -680,12 +755,37 @@ async function buildRouteHTML() {
 
         routeData = await response.json();
     } catch (error) {
-        console.error("TSP route error:", error);
+        console.warn("Backend route service unavailable, using local heuristic:", error);
+        routingError = true;
     }
 
     // Candidate bins for collection dispatch: bins that reached medium/collection threshold
     const dispatchThreshold = thresholds.medium;
     const eligibleBins = bins.filter(bin => Number(bin.fillLevel) >= dispatchThreshold);
+
+    // State 1: Awaiting first sensor reading (no telemetry yet)
+    if (bins.length === 0) {
+        const emptyHtml = `
+            <div class="empty-route-state awaiting">
+                <i class='bx bx-sync bx-spin'></i>
+                <h4>Awaiting Sensor Telemetry</h4>
+                <p>No sensor telemetry available to generate collection route. Waiting for sensor nodes to report fill levels.</p>
+            </div>
+        `;
+        return { html: emptyHtml, stopCount: null, criticalCount: null, totalDistKm: null, etaMinutes: null, source: 'none' };
+    }
+
+    // State 2: Active telemetry, but all bins are within safe limits
+    if (eligibleBins.length === 0) {
+        const emptyHtml = `
+            <div class="empty-route-state nominal">
+                <i class='bx bx-check-shield'></i>
+                <h4>All Bins Below Collection Threshold</h4>
+                <p>All ${bins.length} monitored campus bins are currently below collection threshold (<${dispatchThreshold}%). Collection vehicle remains on standby at Central Depot.</p>
+            </div>
+        `;
+        return { html: emptyHtml, stopCount: 0, criticalCount: 0, totalDistKm: 0, etaMinutes: 0, source: 'standby' };
+    }
 
     let sequencedRoute = [];
     let returnLegDist = 0.5;
@@ -698,7 +798,7 @@ async function buildRouteHTML() {
         let currentPos = 'DEPOT';
         let cumulativeDist = 0;
 
-        routePoints = apiBins.map((bin, index) => {
+        routePoints = apiBins.map((bin) => {
             const dist = getSegmentDistanceKm(currentPos, bin);
             cumulativeDist += dist;
             currentPos = bin;
@@ -717,16 +817,6 @@ async function buildRouteHTML() {
         const serviceMinutes = routePoints.length * 3;
         totalMinutes = Math.round(drivingMinutes + serviceMinutes + 4);
     } else {
-        if (eligibleBins.length === 0) {
-            const emptyHtml = `
-                <div class="empty-route-state">
-                    <i class='bx bx-check-circle'></i>
-                    <p>All monitored campus bins are below collection dispatch threshold (&lt;${dispatchThreshold}%). Fleet is on standby at Central Depot.</p>
-                </div>
-            `;
-            return { html: emptyHtml, stopCount: 0, criticalCount: 0, totalDistKm: 0, etaMinutes: 0 };
-        }
-
         const optimized = optimizeCollectionRoute(eligibleBins);
         sequencedRoute = optimized.sequencedRoute;
         returnLegDist = getSegmentDistanceKm(optimized.finalNode, 'FACILITY');
@@ -755,7 +845,7 @@ async function buildRouteHTML() {
                 </div>
 
                 <span class="route-node-sub">
-                    Collection vehicle departure &amp; logistics check &amp; dispatch initialization
+                    Collection vehicle departure &bull; Logistics check &bull; Dispatch initialization
                 </span>
             </div>
         </div>
@@ -792,9 +882,9 @@ async function buildRouteHTML() {
 
                     <div class="route-node-footer">
                         <span class="route-metric-crumb"><i class='bx bx-trip'></i> Cum: <strong>${step.cumulativeDist ?? '0.00'} km</strong></span>
-                        <span class="route-metric-crumb"><i class='bx bx-brain'></i> AI Score: <strong>${step.score ?? '—'}</strong></span>
+                        <span class="route-metric-crumb"><i class='bx bx-sort-up'></i> Urgency Score: <strong>${step.score ?? '—'}</strong></span>
                         <span><i class='bx bx-chip'></i> ${bin.sensorId || 'ESP32'}</span>
-                        <span class="action-link">View Details &rarr;</span>
+                        <span class="action-link">Inspect Node &rarr;</span>
                     </div>
                 </div>
             </div>
@@ -819,7 +909,7 @@ async function buildRouteHTML() {
                 </div>
 
                 <span class="route-node-sub">
-                    Waste unloading, compaction &amp; depot return &amp; total route: ${totalRouteDist} km
+                    Waste unloading, compaction &bull; Return to depot &bull; Total route: ${totalRouteDist} km
                 </span>
             </div>
         </div>
@@ -835,7 +925,8 @@ async function buildRouteHTML() {
         stopCount: routePoints.length,
         criticalCount,
         totalDistKm: totalRouteDist,
-        etaMinutes: totalMinutes
+        etaMinutes: totalMinutes,
+        source: routingError ? 'fallback' : 'optimized'
     };
 }
 
@@ -844,7 +935,6 @@ async function generateRoute() {
     if (!el) return;
 
     const { html } = await buildRouteHTML();
-
     el.innerHTML = html;
 }
 
@@ -856,36 +946,57 @@ async function renderRoutePage() {
     el.innerHTML = html;
 
     const stopsEl = document.getElementById('routeStops');
-    if (stopsEl) {
-        stopsEl.textContent = stopCount;
-    }
-
     const critEl = document.getElementById('routeCritical');
-    if (critEl) {
-        critEl.textContent = criticalCount;
-    }
-
     const etaEl = document.getElementById('routeETA');
-    const etaValue = Number.isFinite(etaMinutes) ? etaMinutes : stopCount * 6 + 12;
-    const distanceValue = Number.isFinite(totalDistKm) ? totalDistKm : stopCount * 0.75 + 1.2;
-
-    if (etaEl) etaEl.textContent = stopCount === 0 ? '~0 min' : `~${etaValue} min`;
-
     const distEl = document.getElementById('routeDistance');
-    if (distEl) distEl.textContent = stopCount === 0 ? '~0.0 km' : `~${distanceValue.toFixed(1)} km`;
+
+    if (stopCount === null) {
+        if (stopsEl) stopsEl.textContent = '—';
+        if (critEl) critEl.textContent = '—';
+        if (etaEl) etaEl.textContent = '—';
+        if (distEl) distEl.textContent = '—';
+    } else if (stopCount === 0) {
+        if (stopsEl) stopsEl.textContent = '0';
+        if (critEl) critEl.textContent = '0';
+        if (etaEl) etaEl.textContent = 'Standby';
+        if (distEl) distEl.textContent = '0.0 km';
+    } else {
+        if (stopsEl) stopsEl.textContent = stopCount;
+        if (critEl) critEl.textContent = criticalCount;
+        const etaValue = Number.isFinite(etaMinutes) ? etaMinutes : stopCount * 6 + 12;
+        const distanceValue = Number.isFinite(totalDistKm) ? totalDistKm : stopCount * 0.75 + 1.2;
+        if (etaEl) etaEl.textContent = `~${etaValue} min`;
+        if (distEl) distEl.textContent = `~${distanceValue.toFixed(1)} km`;
+    }
 }
 function renderMapMarkersIn(mapBgSelector) {
     const mapBg = document.querySelector(mapBgSelector);
     if (!mapBg) return;
 
     mapBg.querySelectorAll('.map-marker').forEach(m => m.remove());
+    mapBg.querySelectorAll('.map-empty-overlay').forEach(m => m.remove());
 
     const mapNodeCountBadge = document.getElementById('mapNodeCountBadge');
     if (mapNodeCountBadge) {
-        mapNodeCountBadge.innerHTML = `<span class="node-ping-dot"></span> ${bins.length} Active Node${bins.length !== 1 ? 's' : ''}`;
+        if (bins.length === 0) {
+            mapNodeCountBadge.innerHTML = `<span class="node-ping-dot paused"></span> No Nodes Reporting`;
+            mapNodeCountBadge.className = "map-node-count-badge awaiting";
+        } else {
+            mapNodeCountBadge.innerHTML = `<span class="node-ping-dot"></span> ${bins.length} Active Node${bins.length !== 1 ? 's' : ''}`;
+            mapNodeCountBadge.className = "map-node-count-badge";
+        }
     }
 
     if (bins.length === 0) {
+        const overlay = document.createElement('div');
+        overlay.className = 'map-empty-overlay';
+        overlay.innerHTML = `
+            <div class="map-empty-inner">
+                <i class='bx bx-sync bx-spin'></i>
+                <span>Awaiting telemetry &bull; No active devices reporting campus coordinates</span>
+            </div>
+        `;
+        mapBg.appendChild(overlay);
         return;
     }
 
@@ -902,7 +1013,6 @@ function renderMapMarkersIn(mapBgSelector) {
 
         marker.innerHTML = `
             <div class="marker-beacon ${status.className}">
-                <span class="beacon-wave"></span>
                 <span class="beacon-center"><i class='bx bxs-trash'></i></span>
             </div>
             <div class="marker-tag">
