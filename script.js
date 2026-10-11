@@ -163,13 +163,13 @@ function updateESP32Status() {
 setInterval(updateESP32Status, 2000);
 
 const pageTitles = {
-    dashboard: { title: "Overview", subtitle: "Monitor bin levels and collection needs." },
-    bins:      { title: "Bin Monitoring", subtitle: "Individual node telemetry, fill levels, and sensor health." },
-    estimates: { title: "Fill-Level Estimate", subtitle: "Rule-based predictive depletion horizons and overflow forecasts." },
-    analytics: { title: "Fill-Level Estimate", subtitle: "Rule-based predictive depletion horizons and overflow forecasts." },
-    ai:        { title: "Collection Route", subtitle: "Priority-sequenced collection route departing from Central Fleet Depot." },
-    route:     { title: "Collection Route", subtitle: "Priority-sequenced collection route departing from Central Fleet Depot." },
-    settings:  { title: "Settings", subtitle: "System thresholds, theme preferences, and telemetry status." },
+    dashboard: { title: "Operations Overview", subtitle: "Live campus fill telemetry, priority alerts, and collection scheduling" },
+    bins:      { title: "Bin Monitoring", subtitle: "Individual node telemetry, fill levels, and sensor health" },
+    estimates: { title: "Operations Analytics", subtitle: "Rule-based predictive depletion horizons, overflow forecasts, and capacity telemetry" },
+    analytics: { title: "Operations Analytics", subtitle: "Rule-based predictive depletion horizons, overflow forecasts, and capacity telemetry" },
+    ai:        { title: "Collection Routes", subtitle: "Priority-sequenced collection route departing from Central Fleet Depot" },
+    route:     { title: "Collection Routes", subtitle: "Priority-sequenced collection route departing from Central Fleet Depot" },
+    settings:  { title: "Settings", subtitle: "System thresholds, theme preferences, and telemetry diagnostics" },
 };
 
 
@@ -610,69 +610,101 @@ function renderAlerts() {
             alertCountBadge.className = 'arena-tag awaiting';
         }
         container.innerHTML = `
-            <div class="no-alerts-card awaiting">
-                <div class="no-alerts-icon"><i class='bx bx-sync bx-spin'></i></div>
-                <div class="no-alerts-content">
+            <div class="priority-empty-state awaiting">
+                <div class="priority-empty-icon"><i class='bx bx-sync bx-spin'></i></div>
+                <div class="priority-empty-text">
                     <h4>Waiting for Sensor Telemetry</h4>
-                    <p>No sensor nodes are currently reporting. Live collection alerts will populate once hardware telemetry arrives from Firebase.</p>
+                    <p>No sensor nodes are currently reporting. Live collection priorities will populate once telemetry arrives from Firebase.</p>
                 </div>
             </div>
         `;
         return;
     }
 
-    const alertBins = bins
-        .filter(bin => Number(bin.fillLevel) >= thresholds.warning)
-        .sort((a, b) => Number(b.fillLevel) - Number(a.fillLevel));
+    const urgentBins = bins.filter(bin => Number(bin.fillLevel) >= thresholds.warning);
 
-    // 2. Telemetry present, all bins below warning threshold
-    if (alertBins.length === 0) {
-        if (alertCountBadge) {
+    // Update badge in section header
+    if (alertCountBadge) {
+        if (urgentBins.length === 0) {
             alertCountBadge.textContent = "All Nominal";
             alertCountBadge.className = 'arena-tag normal';
+        } else {
+            alertCountBadge.textContent = `${urgentBins.length} Action Needed`;
+            alertCountBadge.className = 'arena-tag critical';
         }
-        container.innerHTML = `
-            <div class="no-alerts-card">
-                <div class="no-alerts-icon"><i class='bx bx-check-shield'></i></div>
-                <div class="no-alerts-content">
-                    <h4>All Campus Bins Within Safe Limits</h4>
-                    <p>All ${bins.length} monitored campus bins are below the collection threshold (<${thresholds.warning}%). No urgent collection dispatch is required.</p>
-                </div>
-            </div>
-        `;
-        return;
     }
 
-    // 3. One or more bins requiring collection action
-    if (alertCountBadge) {
-        alertCountBadge.textContent = `${alertBins.length} Action Needed`;
-        alertCountBadge.className = 'arena-tag critical';
-    }
+    // Sort bins: bins needing collection above normal bins, sorted by fill descending
+    const sortedBins = [...bins].sort((a, b) => {
+        const aFill = Number(a.fillLevel) || 0;
+        const bFill = Number(b.fillLevel) || 0;
+        const aUrgent = aFill >= thresholds.warning;
+        const bUrgent = bFill >= thresholds.warning;
+        if (aUrgent && !bUrgent) return -1;
+        if (!aUrgent && bUrgent) return 1;
+        return bFill - aFill;
+    });
 
-    container.innerHTML = alertBins.map(bin => {
-        const isCritical = Number(bin.fillLevel) >= thresholds.critical;
-        const binNumber = bin.id.replace("BIN-", "");
+    container.innerHTML = `
+        <div class="priority-table-wrapper">
+            <table class="priority-data-table">
+                <thead>
+                    <tr>
+                        <th>Bin ID</th>
+                        <th>Campus Location</th>
+                        <th>Fill Level</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${sortedBins.map(bin => {
+                        const status = getBinStatus(bin.fillLevel);
+                        const binNum = bin.id ? bin.id.replace("BIN-", "") : bin.id;
+                        const fill = Number(bin.fillLevel) || 0;
+                        const isUrgent = fill >= thresholds.warning;
 
-        return `
-            <div class="alert-item ${isCritical ? 'critical' : 'warning'}" onclick="showBinDetails('${bin.id}')">
-                <div class="alert-left-meta">
-                    <span class="alert-status-pill ${isCritical ? 'critical' : 'warning'}">
-                        ${isCritical ? 'CRITICAL OVERFLOW' : 'CAPACITY WARNING'}
-                    </span>
-                    <span class="alert-bin-name">Bin ${binNumber} &bull; ${bin.location}</span>
-                    <span class="alert-ping-time"><i class='bx bx-time'></i> ${formatSensorTimestamp(bin.lastUpdated)}</span>
-                </div>
-                <div class="alert-right-action">
-                    <div class="alert-capacity-metric">
-                        <span class="metric-num ${isCritical ? 'critical' : 'warning'}">${bin.fillLevel}%</span>
-                    </div>
-                    <button class="alert-dispatch-btn" onclick="event.stopPropagation(); showBinDetails('${bin.id}')">
-                        Inspect &rarr;
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
+                        return `
+                            <tr class="${isUrgent ? 'row-urgent' : ''}" onclick="showBinDetails('${bin.id}')" title="Inspect node ${bin.id}">
+                                <td>
+                                    <div class="priority-bin-id">
+                                        <strong>Bin ${binNum}</strong>
+                                        <span class="dim">${bin.id}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="priority-loc"><i class='bx bx-map-pin'></i> ${bin.location || 'Campus Facility'}</span>
+                                </td>
+                                <td>
+                                    <div class="priority-fill-cell">
+                                        <div class="priority-fill-track">
+                                            <div class="priority-fill-bar ${status.className}" style="width: ${fill}%"></div>
+                                        </div>
+                                        <span class="priority-fill-num ${status.className}">${fill}%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-indicator-badge ${status.className}">
+                                        <span class="status-indicator-dot ${status.className}"></span>
+                                        ${status.label}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="priority-timestamp"><i class='bx bx-time'></i> ${formatSensorTimestamp(bin.lastUpdated)}</span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <button class="priority-inspect-btn" onclick="event.stopPropagation(); showBinDetails('${bin.id}')">
+                                        Inspect &rarr;
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
 }
 
 /* ============================================================
@@ -1126,6 +1158,7 @@ function renderEstimatesPage() {
                 <td colspan="6" class="table-empty">Awaiting live sensor readings from Firebase to generate fill projections.</td>
             </tr>
         `;
+        renderChartIn('analyticsChartWrapper');
         return;
     }
 
@@ -1161,6 +1194,8 @@ function renderEstimatesPage() {
             </tr>
         `;
     }).join('');
+
+    renderChartIn('analyticsChartWrapper');
 }
 
 function renderAnalyticsPage() {
@@ -1269,6 +1304,10 @@ function navigateToPage(pageName) {
     }
 
     currentPage = pageName;
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

@@ -42,13 +42,13 @@
             </a>
 
             <div class="nav-section-label">Operations</div>
-            <a href="#" class="nav-link" data-page="estimates">
-                <i class='bx bx-time'></i>
-                <span>Fill-Level Estimate</span>
-            </a>
             <a href="#" class="nav-link" data-page="ai">
                 <i class='bx bx-trip'></i>
-                <span>Collection Route</span>
+                <span>Collection Routes</span>
+            </a>
+            <a href="#" class="nav-link" data-page="estimates">
+                <i class='bx bx-bar-chart-alt-2'></i>
+                <span>Analytics</span>
             </a>
 
             <div class="nav-section-label">System</div>
@@ -105,8 +105,8 @@
             <div class="header-left">
                 <div class="header-title-wrap">
                     <div class="header-titles">
-                        <h1 class="header-page-title" id="pageTitleHeading">Overview</h1>
-                        <p class="header-page-subtitle" id="pageSubtitle">Monitor bin levels and collection needs.</p>
+                        <h1 class="header-page-title" id="pageTitleHeading">Operations Overview</h1>
+                        <p class="header-page-subtitle" id="pageSubtitle">Live campus fill telemetry, priority alerts, and collection scheduling</p>
                     </div>
                     <span class="telemetry-chip-tag" id="headerConnectionBadge"><i class='bx bx-sync'></i> Awaiting Data</span>
                 </div>
@@ -220,100 +220,6 @@
                 </div>
             </section>
 
-            <!-- Supporting Sections: Campus Locations & Operational Telemetry -->
-            <div class="operations-secondary-grid">
-                
-                <!-- Campus Location Directory (Clean replacement for fake CSS map) -->
-                <section class="secondary-map-col">
-                    <div class="arena-card location-directory-card">
-                        <div class="location-directory-header">
-                            <div class="ld-header-left">
-                                <h3 class="ld-title"><i class='bx bx-map-pin'></i> Monitored Locations</h3>
-                                <span class="map-node-count-badge" id="mapNodeCountBadge"><span class="node-ping-dot"></span> Active Monitoring</span>
-                            </div>
-                            <div class="ld-header-right">
-                                <button class="btn-ghost-sm" onclick="navigateToPage('bins')" title="Inspect all bins">
-                                    <i class='bx bx-list-ul'></i> All Nodes
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Location Directory Container (Reuses mapPlaceholder ID for script compatibility) -->
-                        <div class="location-directory-body" id="mapPlaceholder">
-                            <!-- Populated dynamically by JS with structured location cards -->
-                        </div>
-
-                        <!-- Directory Footer Legend -->
-                        <div class="directory-footer">
-                            <div class="directory-legend">
-                                <span class="legend-item" id="legendItemNormal"><span class="legend-dot normal"></span> <span id="legendTextNormal">Normal (&le;40%)</span></span>
-                                <span class="legend-item" id="legendItemMedium"><span class="legend-dot medium"></span> <span id="legendTextMedium">Medium (41–79%)</span></span>
-                                <span class="legend-item" id="legendItemWarning"><span class="legend-dot warning"></span> <span id="legendTextWarning">Warning (80–89%)</span></span>
-                                <span class="legend-item" id="legendItemCritical"><span class="legend-dot critical"></span> <span id="legendTextCritical">Critical (&ge;90%)</span></span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Supporting Information: Capacity & Sensor Status -->
-                <section class="secondary-info-col">
-                    <div class="arena-card supporting-info-card">
-                        <div class="arena-card-header">
-                            <div class="arena-title-group">
-                                <h2 class="section-title"><i class='bx bx-pulse'></i> Operational Telemetry</h2>
-                                <span class="section-subtitle">Hardware telemetry stream &amp; node connectivity</span>
-                            </div>
-                        </div>
-                        <div class="supporting-info-body">
-                            <!-- Telemetry stats -->
-                            <div class="info-row">
-                                <span class="info-label"><i class='bx bx-chip'></i> Prototype Sensor (BIN-01)</span>
-                                <span class="info-val highlight" id="esp32StatusText">STANDBY</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label"><i class='bx bx-cloud'></i> Cloud Database</span>
-                                <span class="info-val">Firebase RTDB</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label"><i class='bx bx-check-shield'></i> System Fleet State</span>
-                                <span class="info-val" id="dashFleetStateText">Waiting</span>
-                            </div>
-
-                            <!-- Quick distribution preview -->
-                            <div class="dash-quick-dist">
-                                <div class="dall-label-row">
-                                    <span class="dall-label">Capacity Distribution</span>
-                                    <button class="dash-text-link" onclick="navigateToPage('estimates')">View Estimates &rarr;</button>
-                                </div>
-                                <div class="dash-dist-bars" id="dashMiniDistBars">
-                                    <div class="mini-bar-row">
-                                        <span class="mini-bar-name">Safe Fill</span>
-                                        <div class="mini-bar-track"><div class="mini-bar-fill normal" id="miniDistNormal" style="width:0%"></div></div>
-                                        <span class="mini-bar-num" id="miniDistNormalVal">0</span>
-                                    </div>
-                                    <div class="mini-bar-row">
-                                        <span class="mini-bar-name">Medium</span>
-                                        <div class="mini-bar-track"><div class="mini-bar-fill medium" id="miniDistMedium" style="width:0%"></div></div>
-                                        <span class="mini-bar-num" id="miniDistMediumVal">0</span>
-                                    </div>
-                                    <div class="mini-bar-row">
-                                        <span class="mini-bar-name">Nearly Full</span>
-                                        <div class="mini-bar-track"><div class="mini-bar-fill warning" id="miniDistWarning" style="width:0%"></div></div>
-                                        <span class="mini-bar-num" id="miniDistWarningVal">0</span>
-                                    </div>
-                                    <div class="mini-bar-row">
-                                        <span class="mini-bar-name">Critical</span>
-                                        <div class="mini-bar-track"><div class="mini-bar-fill critical" id="miniDistCritical" style="width:0%"></div></div>
-                                        <span class="mini-bar-num" id="miniDistCriticalVal">0</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-            </div>
-
         </div>
 
         <!-- ============================================================
@@ -414,6 +320,29 @@
                             <h4>Projections &bull; Rule-Based Estimation</h4>
                             <p>Urgency windows are calculated by comparing current ultrasonic readings against configured operational thresholds. When sensors publish updates to Firebase, projections refresh automatically.</p>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Telemetry & Capacity Comparison Module -->
+            <section class="ai-module-card ai-telemetry-module full-width-module" style="margin-top: 1.25rem;">
+                <div class="ai-module-header">
+                    <div class="aim-title-group">
+                        <div class="aim-icon"><i class='bx bx-bar-chart-alt-2'></i></div>
+                        <div>
+                            <h3>Fleet Capacity &amp; Telemetry Comparison</h3>
+                            <span class="aim-subtitle">Live sensor fill levels benchmarked against operational thresholds</span>
+                        </div>
+                    </div>
+                    <span class="aim-status-badge ready">
+                        <span class="aim-pulse-dot"></span>
+                        Real-Time Telemetry
+                    </span>
+                </div>
+
+                <div class="ai-module-body">
+                    <div class="chart-container" id="analyticsChartWrapper">
+                        <!-- Populated dynamically by JS -->
                     </div>
                 </div>
             </section>
