@@ -1505,7 +1505,7 @@ function updateThemeUI(isDark) {
 function toggleTheme() {
     const isDark = document.body.classList.toggle('dark-theme');
     try {
-        localStorage.setItem('swm-theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('swm-theme-mode', isDark ? 'dark' : 'light');
     } catch (e) {}
     updateThemeUI(isDark);
 }
@@ -1513,12 +1513,17 @@ function toggleTheme() {
 function initTheme() {
     let savedTheme = null;
     try {
-        savedTheme = localStorage.getItem('swm-theme');
+        savedTheme = localStorage.getItem('swm-theme-mode');
+        if (!savedTheme) {
+            // Clean up legacy cached values so default is guaranteed Light mode
+            localStorage.removeItem('swm-theme');
+            savedTheme = 'light';
+            localStorage.setItem('swm-theme-mode', 'light');
+        }
     } catch (e) {}
 
     // Default to clean warm off-white light theme
-    let isDark = false;
-    if (savedTheme === 'dark') isDark = true;
+    const isDark = (savedTheme === 'dark');
 
     if (isDark) {
         document.body.classList.add('dark-theme');
@@ -1527,6 +1532,7 @@ function initTheme() {
     }
     updateThemeUI(isDark);
 }
+
 
 
 /* ============================================================
