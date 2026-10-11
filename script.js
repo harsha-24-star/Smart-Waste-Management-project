@@ -37,6 +37,7 @@ const connectedRef = database.ref(".info/connected");
 // Active fleet bin records (populated directly from Firebase Realtime Database)
 let bins = [];
 let firebaseSyncStatus = 'awaiting'; // 'awaiting' | 'synced' | 'error'
+let lastSyncTime = null;
 
 /**
  * updateFirebaseSyncUI — Reflects actual synchronization state across the interface.
@@ -111,6 +112,7 @@ connectedRef.on("value", (snap) => {
 // Live listener for bin entries
 binsRef.on("value", (snapshot) => {
     const data = snapshot.val();
+    lastSyncTime = new Date();
     if (data && Object.keys(data).length > 0) {
         bins = Object.values(data);
         updateFirebaseSyncUI('synced');
@@ -128,11 +130,11 @@ binsRef.on("value", (snapshot) => {
 
 
 const pageTitles = {
-    dashboard: { title: "Operations Command Center",        subtitle: "Real-time ultrasonic telemetry, IoT fleet monitoring, and live hardware diagnostics" },
-    bins:      { title: "Smart Bins & Hardware Nodes",      subtitle: "Live ultrasonic sensor telemetry, fill diagnostics, and hardware health" },
-    analytics: { title: "Analytics & Telemetry",            subtitle: "Campus waste velocity metrics, fill distribution, and capacity comparison" },
-    ai:        { title: "AI Intelligence & Autonomous Dispatch", subtitle: "Neural fill velocity forecasting, overflow prediction, and dynamic priority routing" },
-    settings:  { title: "Platform Architecture & Config",   subtitle: "Sensor thresholds, notification rules, and Firebase cloud integration" },
+    dashboard: { title: "Campus Waste Monitoring",        subtitle: "Real-time ultrasonic telemetry and bin status across campus" },
+    bins:      { title: "Monitored Waste Bins",          subtitle: "Individual bin fill levels, location details, and ultrasonic sensor telemetry" },
+    analytics: { title: "Telemetry & Capacity Analytics", subtitle: "Fill distribution across active bins and campus capacity breakdown" },
+    ai:        { title: "Route Planning & Fill Forecast", subtitle: "Rule-based collection route optimization and threshold-based fill projections" },
+    settings:  { title: "System Configuration & Thresholds", subtitle: "Adjust fill-level category thresholds and review cloud sync status" },
 };
 
 
@@ -275,9 +277,30 @@ function formatTime(date) {
     });
 }
 
-function animateCounter(elemId, targetValue, duration = 800, forceFromZero = false) {
+function formatSensorTimestamp(raw) {
+    if (!raw) return 'Live';
+    const s = String(raw).trim();
+    if (s.includes('ago') || s.toLowerCase() === 'live' || s.toLowerCase() === 'just now') {
+        return s;
+    }
+    const parsed = new Date(s);
+    if (!isNaN(parsed.getTime())) {
+        return parsed.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    return s;
+}
+
+function animateCounter(elemId, targetValue, duration = 250, forceFromZero = false) {
     const el = document.getElementById(elemId);
     if (!el) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        el.textContent = targetValue;
+        return;
+    }
 
     const startValue = forceFromZero ? 0 : (parseInt(el.textContent, 10) || 0);
     if (startValue === targetValue && !forceFromZero) {
@@ -327,28 +350,37 @@ function updateSummary(forceFromZero = false) {
 
     const totalCount = bins.length;
 
-    animateCounter('totalBins', totalCount, 800, forceFromZero);
-    animateCounter('normalBins', normal, 800, forceFromZero);
-    animateCounter('mediumBins', medium, 800, forceFromZero);
-    animateCounter('nearlyFullBins', warning, 800, forceFromZero);
-    animateCounter('criticalBins', critical, 800, forceFromZero);
+    animateCounter('totalBins', totalCount, 250, forceFromZero);
+    animateCounter('normalBins', normal, 250, forceFromZero);
+    animateCounter('mediumBins', medium, 250, forceFromZero);
+    animateCounter('nearlyFullBins', warning, 250, forceFromZero);
+    animateCounter('criticalBins', critical, 250, forceFromZero);
 
     // Sync metric pill threshold texts with current active thresholds
     updateThresholdLabels();
 
     // Header fleet tag & sensors tag
     const headerFleet = document.getElementById('headerFleetVal');
-    if (headerFleet) headerFleet.innerHTML = `<i class='bx bx-chip'></i> ${totalCount} Nodes`;
+    if (headerFleet) {
+        headerFleet.textContent = totalCount > 0 ? `${totalCount} Nodes` : `—`;
+    }
 
     const sensorsOnline = document.getElementById('sensorsOnline');
-    if (sensorsOnline) sensorsOnline.textContent = `${totalCount} / ${totalCount}`;
+    if (sensorsOnline) {
+        sensorsOnline.textContent = totalCount > 0 ? `${totalCount} / ${totalCount}` : `0 / 0 (Pending)`;
+    }
 
-    // System Health calculation (100% minus penalty for criticals and warnings)
+    // System Health calculation (do not report 100% when no data has arrived)
     const healthVal = document.getElementById('headerHealthVal');
     if (healthVal) {
-        const healthPct = totalCount === 0 ? 100 : Math.max(70, Math.round(100 - (critical * 5) - (warning * 2) - (medium * 0.5)));
-        healthVal.innerHTML = `<i class='bx bx-pulse'></i> ${healthPct}%`;
-        healthVal.className = healthPct >= 90 ? 'h-metric-val health-good' : 'h-metric-val health-warn';
+        if (totalCount === 0) {
+            healthVal.textContent = "Awaiting Data";
+            healthVal.className = "health-warn";
+        } else {
+            const healthPct = Math.max(70, Math.round(100 - (critical * 5) - (warning * 2) - (medium * 0.5)));
+            healthVal.textContent = `${healthPct}% Nominal`;
+            healthVal.className = healthPct >= 90 ? "health-good" : "health-warn";
+        }
     }
 
     // Radial ring (safe normal ratio)
@@ -416,7 +448,7 @@ function buildBinCardsHTML(binsToRender) {
                     </div>
                 </div>
                 <div class="bin-card-footer">
-                    <span class="bin-ping"><i class='bx bx-time'></i> ${bin.lastUpdated || 'Live'}</span>
+                    <span class="bin-ping"><i class='bx bx-time'></i> ${formatSensorTimestamp(bin.lastUpdated)}</span>
                     <button class="bin-action-btn" onclick="event.stopPropagation(); showBinDetails('${bin.id}')">
                         Inspect &rarr;
                     </button>
@@ -485,7 +517,7 @@ function renderAlerts() {
                         ${isCritical ? 'CRITICAL DISPATCH' : 'CAPACITY WARNING'}
                     </span>
                     <span class="alert-bin-name">Bin ${binNumber} &bull; ${bin.location}</span>
-                    <span class="alert-ping-time"><i class='bx bx-time'></i> ${bin.lastUpdated || 'just now'}</span>
+                    <span class="alert-ping-time"><i class='bx bx-time'></i> ${formatSensorTimestamp(bin.lastUpdated)}</span>
                 </div>
                 <div class="alert-right-action">
                     <div class="alert-capacity-metric">
@@ -901,7 +933,7 @@ function renderAIPage() {
         if (bins.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="table-empty">Awaiting live telemetry packets from Firebase to train fill velocity weights.</td>
+                    <td colspan="6" class="table-empty">Awaiting live sensor readings from Firebase to generate fill projections.</td>
                 </tr>
             `;
         } else {
@@ -910,7 +942,7 @@ function renderAIPage() {
                 const binNum = bin.id.replace("BIN-", "");
                 const fill = Number(bin.fillLevel) || 0;
 
-                // Neural model heuristic projection
+                // Rule-based threshold urgency estimation
                 let overflowEstimate = "—";
                 let estTime = "—";
                 if (fill >= thresholds.critical) {
@@ -1006,7 +1038,15 @@ function updateDateTime() {
     const dateEl = document.getElementById('currentDate');
     const timeEl = document.getElementById('lastUpdate');
     if (dateEl) dateEl.textContent = formatDate(now);
-    if (timeEl) timeEl.textContent = formatTime(now);
+    if (timeEl) {
+        if (lastSyncTime) {
+            timeEl.textContent = formatTime(lastSyncTime);
+        } else if (bins.length > 0) {
+            timeEl.textContent = formatTime(now);
+        } else {
+            timeEl.textContent = "Awaiting sync";
+        }
+    }
 }
 
 function renderAll(forceCountAnimation = false) {
@@ -1030,6 +1070,12 @@ let currentPage = 'dashboard';
 
 function navigateToPage(pageName) {
     if (pageName === 'route') pageName = 'ai';
+
+    // Update header title based on current workspace
+    const headingEl = document.getElementById('pageTitleHeading');
+    if (headingEl && pageTitles[pageName]) {
+        headingEl.textContent = pageTitles[pageName].title;
+    }
 
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
@@ -1129,7 +1175,7 @@ function showBinDetails(binId) {
     if (modalId) modalId.textContent = `Bin ${binNumber} (${bin.id})`;
     if (modalLoc) modalLoc.textContent = bin.location;
     if (modalPct) modalPct.textContent = `${bin.fillLevel}%`;
-    if (modalUpdated) modalUpdated.textContent = bin.lastUpdated || 'Live Telemetry';
+    if (modalUpdated) modalUpdated.textContent = formatSensorTimestamp(bin.lastUpdated);
     if (modalSens) modalSens.textContent = bin.sensorId || 'ESP32-CORE';
 
     if (modalStat) {
@@ -1335,17 +1381,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Refresh sync button
+    // Refresh sync buttons (desktop & mobile)
+    function handleRefreshAction(btn) {
+        if (!btn) return;
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.classList.add('bx-spin');
+            setTimeout(() => icon.classList.remove('bx-spin'), 700);
+        }
+        renderAll(true);
+    }
+
     const refreshBtn = document.getElementById('btnRefresh');
     if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-            const icon = refreshBtn.querySelector('i');
-            if (icon) {
-                icon.classList.add('bx-spin');
-                setTimeout(() => icon.classList.remove('bx-spin'), 700);
-            }
-            renderAll(true);
-        });
+        refreshBtn.addEventListener('click', () => handleRefreshAction(refreshBtn));
+    }
+
+    const mobileRefreshBtn = document.getElementById('mobileRefreshBtn');
+    if (mobileRefreshBtn) {
+        mobileRefreshBtn.addEventListener('click', () => handleRefreshAction(mobileRefreshBtn));
     }
 
     // Modal

@@ -3,75 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Waste Management — AI &amp; IoT Smart City Platform</title>
-    <!-- Google Fonts: Plus Jakarta Sans, Inter & JetBrains Mono -->
+    <title>Smart Waste Management — Campus Environmental Monitoring</title>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- Boxicons for modern application icons -->
+    <!-- Boxicons for standard UI icons -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
 <body class="dark-theme">
 
-    <!-- Ambient background lighting for glassmorphic depth -->
-    <div class="ambient-glow glow-top"></div>
-    <div class="ambient-glow glow-bottom"></div>
-    <div class="ambient-glow glow-center"></div>
-    <div class="ambient-glow glow-cyan"></div>
-    <div class="ambient-grid-canvas"></div>
-
     <!-- ============================================================
-         SIDEBAR NAVIGATION: Modern Operations Application Nav
+         SIDEBAR NAVIGATION: Clean Campus Navigation
     ============================================================ -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="brand-badge-wrap">
                 <div class="logo-icon-wrapper">
                     <i class='bx bxs-trash icon-logo'></i>
-                    <span class="logo-radar-ring"></span>
                 </div>
                 <div class="sidebar-brand-text">
-                    <h2>Smart Waste<br>Management</h2>
-                    <span class="platform-edition-tag"><span class="edition-dot"></span> AI + IoT City Platform</span>
+                    <h2>Smart Waste</h2>
+                    <span class="platform-edition-tag">Campus Monitor</span>
                 </div>
             </div>
         </div>
 
         <nav class="sidebar-nav">
-            <!-- Operations Group -->
-            <div class="nav-section-label">Operations</div>
+            <div class="nav-section-label">Monitoring</div>
             <a href="#" class="nav-link active" data-page="dashboard">
                 <i class='bx bxs-dashboard'></i>
                 <span>Dashboard</span>
-                <span class="nav-indicator"></span>
             </a>
             <a href="#" class="nav-link" data-page="bins">
                 <i class='bx bxs-package'></i>
                 <span>Smart Bins</span>
-                <span class="nav-indicator"></span>
             </a>
 
-            <!-- Intelligence Group -->
-            <div class="nav-section-label">Analytics &amp; Intelligence</div>
+            <div class="nav-section-label">Operations</div>
             <a href="#" class="nav-link" data-page="analytics">
                 <i class='bx bxs-bar-chart-alt-2'></i>
                 <span>Analytics</span>
-                <span class="nav-indicator"></span>
             </a>
             <a href="#" class="nav-link" data-page="ai">
-                <i class='bx bx-brain'></i>
-                <span>AI Workspace</span>
-                <span class="nav-chip-badge">AI 2.0</span>
-                <span class="nav-indicator"></span>
+                <i class='bx bx-trip'></i>
+                <span>Route &amp; Forecast</span>
             </a>
 
-            <!-- System Group -->
             <div class="nav-section-label">System</div>
             <a href="#" class="nav-link" data-page="settings">
                 <i class='bx bxs-cog'></i>
                 <span>Settings</span>
-                <span class="nav-indicator"></span>
             </a>
         </nav>
 
@@ -80,10 +63,10 @@
             <div class="system-status-card" id="sidebarFirebaseCard">
                 <div class="system-status">
                     <span class="status-dot" id="sidebarStatusDot"></span>
-                    <span class="status-text" id="sidebarStatusText">Awaiting Cloud Sync</span>
+                    <span class="status-text" id="sidebarStatusText">Connecting...</span>
                 </div>
                 <div class="sidebar-telemetry-meta">
-                    <span class="meta-tag"><i class='bx bx-chip'></i> ESP32 Mesh</span>
+                    <span class="meta-tag"><i class='bx bx-calendar'></i> <span id="currentDate"></span></span>
                     <span class="meta-tag" id="sidebarDataSourceTag"><i class='bx bx-cloud'></i> Firebase RTDB</span>
                 </div>
             </div>
@@ -97,85 +80,78 @@
         </button>
         <div class="mobile-brand">
             <i class='bx bxs-trash'></i>
-            <span>Smart Waste Mgmt</span>
+            <span>Smart Waste Monitor</span>
         </div>
-        <button class="theme-toggle-btn mobile-toggle" id="mobileThemeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">
-            <i class='bx bx-moon'></i>
-        </button>
+        <div class="mobile-topbar-actions">
+            <button class="theme-toggle-btn mobile-toggle" id="mobileRefreshBtn" title="Refresh telemetry" aria-label="Refresh telemetry">
+                <i class='bx bx-refresh'></i>
+            </button>
+            <button class="theme-toggle-btn mobile-toggle" id="mobileThemeToggle" title="Toggle color theme" aria-label="Toggle color theme">
+                <i class='bx bx-moon'></i>
+            </button>
+        </div>
     </div>
 
     <!-- Sidebar Overlay for Mobile/Tablet -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- ============================================================
-         MAIN OPERATIONS COMMAND CENTER
+         MAIN CONTENT AREA
     ============================================================ -->
     <main class="main-content">
 
-        <!-- Ultra-Modern Glassmorphic Command Header Bar -->
+        <!-- Top Header Bar -->
         <header class="main-header">
             <div class="header-left">
-                <div class="header-telemetry-strip">
-                    <span class="telemetry-beacon"></span>
-                    <span class="telemetry-txt">LIVE SENSOR TELEMETRY &bull; CAMPUS GRID SECTOR 04</span>
-                    <span class="telemetry-chip-tag" id="headerConnectionBadge"><i class='bx bx-sync'></i> Awaiting Sync</span>
+                <div class="header-title-wrap">
+                    <h1 class="header-page-title" id="pageTitleHeading">Campus Waste Monitoring</h1>
+                    <span class="telemetry-chip-tag" id="headerConnectionBadge"><i class='bx bx-sync'></i> Awaiting Data</span>
                 </div>
             </div>
             <div class="header-right">
-                <div class="header-metrics-pill">
-                    <div class="header-metric-item">
-                        <span class="h-metric-lbl">ACTIVE FLEET</span>
-                        <span class="h-metric-val" id="headerFleetVal"><i class='bx bx-chip'></i> — Nodes</span>
-                    </div>
-                    <div class="h-metric-div"></div>
-                    <div class="header-metric-item">
-                        <span class="h-metric-lbl">SYSTEM HEALTH</span>
-                        <span class="h-metric-val health-good" id="headerHealthVal"><i class='bx bx-pulse'></i> 100%</span>
-                    </div>
-                </div>
-                <div class="header-info">
-                    <span class="header-info-item"><i class='bx bx-calendar'></i> <span id="currentDate"></span></span>
-                    <span class="header-info-item"><i class='bx bx-broadcast'></i> Sync: <strong id="lastUpdate">—</strong></span>
+                <div class="header-sync-pill">
+                    <span class="sync-dot-live"></span>
+                    <span class="sync-label">Last sync:</span>
+                    <strong class="sync-time" id="lastUpdate">—</strong>
                 </div>
                 <div class="header-actions">
                     <button class="theme-toggle-btn ghost-icon-btn" id="themeToggleBtn" title="Toggle dark / light mode" aria-label="Toggle dark / light mode">
                         <i class='bx bx-moon'></i>
                     </button>
-                    <button class="btn-refresh" id="btnRefresh" title="Refresh data from Firebase">
-                        <i class='bx bx-refresh'></i> <span>Sync Cloud</span>
+                    <button class="btn-refresh" id="btnRefresh" title="Check connection and refresh telemetry">
+                        <i class='bx bx-refresh'></i> <span>Refresh</span>
                     </button>
                 </div>
             </div>
         </header>
 
         <!-- ============================================================
-             PAGE 1: OPERATIONS DASHBOARD (PRIMARY COMMAND CENTER)
+             PAGE 1: OPERATIONS DASHBOARD
         ============================================================ -->
         <div class="page active" id="page-dashboard">
 
-            <!-- Executive Fleet Health & KPI Operations Console -->
+            <!-- Dashboard Operations Header Bar -->
+            <div class="dashboard-header-bar">
+                <div class="dashboard-header-left">
+                    <h2 class="dashboard-main-heading">Operations Overview</h2>
+                    <span class="dashboard-main-subheading">Live ultrasonic sensor telemetry across campus collection points</span>
+                </div>
+                <div class="dashboard-header-stats">
+                    <span class="d-stat-chip"><i class='bx bx-chip'></i> <strong id="headerFleetVal">—</strong></span>
+                    <span class="d-stat-chip"><i class='bx bx-shield-quarter'></i> Fleet State: <strong id="headerHealthVal" class="health-good">Waiting</strong></span>
+                </div>
+            </div>
+
+            <!-- Summary Metric Cards -->
             <section class="summary-cards">
                 <div class="card summary-card total">
                     <div class="card-top-row">
                         <div class="card-icon"><i class='bx bxs-package'></i></div>
-                        <span class="card-metric-pill">Active Fleet</span>
+                        <span class="card-metric-pill">Monitored</span>
                     </div>
                     <div class="card-info">
                         <div class="stat-number-row">
                             <h3 id="totalBins">0</h3>
-                            <div class="stat-sparkline" title="Fleet deployment trajectory">
-                                <svg width="50" height="24" viewBox="0 0 50 24" fill="none">
-                                    <defs>
-                                        <linearGradient id="sparkTotal" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stop-color="#22D3C5" stop-opacity="0.35"/>
-                                            <stop offset="100%" stop-color="#22D3C5" stop-opacity="0"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M2 19 L12 17 L22 18 L32 12 L40 10 L48 4" stroke="#22D3C5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M2 19 L12 17 L22 18 L32 12 L40 10 L48 4 L48 24 L2 24 Z" fill="url(#sparkTotal)"/>
-                                    <circle cx="48" cy="4" r="2.5" fill="#22D3C5"/>
-                                </svg>
-                            </div>
                         </div>
                         <p>Total Monitored Bins</p>
                     </div>
@@ -189,12 +165,6 @@
                     <div class="card-info">
                         <div class="stat-number-row">
                             <h3 id="normalBins">0</h3>
-                            <div class="stat-progress-ring" title="Normal Fill Ratio">
-                                <svg width="28" height="28" viewBox="0 0 36 36">
-                                    <circle class="ring-bg" cx="18" cy="18" r="14" fill="none" stroke="rgba(34, 211, 197, 0.18)" stroke-width="3.5"/>
-                                    <circle class="ring-val normal" id="normalRingProgress" cx="18" cy="18" r="14" fill="none" stroke="#22D3C5" stroke-width="3.5" stroke-dasharray="88" stroke-dashoffset="35" stroke-linecap="round"/>
-                                </svg>
-                            </div>
                         </div>
                         <p>Normal Fill Level</p>
                     </div>
@@ -208,19 +178,6 @@
                     <div class="card-info">
                         <div class="stat-number-row">
                             <h3 id="mediumBins">0</h3>
-                            <div class="stat-sparkline" title="Moderate fill velocity">
-                                <svg width="50" height="24" viewBox="0 0 50 24" fill="none">
-                                    <defs>
-                                        <linearGradient id="sparkMedium" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.35"/>
-                                            <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M2 18 L14 16 L24 15 L36 12 L48 9" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M2 18 L14 16 L24 15 L36 12 L48 9 L48 24 L2 24 Z" fill="url(#sparkMedium)"/>
-                                    <circle cx="48" cy="9" r="2.5" fill="#38BDF8"/>
-                                </svg>
-                            </div>
                         </div>
                         <p>Medium Fill Level</p>
                     </div>
@@ -234,19 +191,6 @@
                     <div class="card-info">
                         <div class="stat-number-row">
                             <h3 id="nearlyFullBins">0</h3>
-                            <div class="stat-sparkline" title="Warning trajectory">
-                                <svg width="50" height="24" viewBox="0 0 50 24" fill="none">
-                                    <defs>
-                                        <linearGradient id="sparkWarning" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stop-color="#FBBF24" stop-opacity="0.35"/>
-                                            <stop offset="100%" stop-color="#FBBF24" stop-opacity="0"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M2 20 L14 18 L24 14 L36 16 L48 7" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M2 20 L14 18 L24 14 L36 16 L48 7 L48 24 L2 24 Z" fill="url(#sparkWarning)"/>
-                                    <circle cx="48" cy="7" r="2.5" fill="#FBBF24"/>
-                                </svg>
-                            </div>
                         </div>
                         <p>Nearly Full (Schedule Collection)</p>
                     </div>
@@ -260,52 +204,29 @@
                     <div class="card-info">
                         <div class="stat-number-row">
                             <h3 id="criticalBins">0</h3>
-                            <div class="stat-sparkline" title="Critical overflow velocity">
-                                <svg width="50" height="24" viewBox="0 0 50 24" fill="none">
-                                    <defs>
-                                        <linearGradient id="sparkCritical" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stop-color="#FB7185" stop-opacity="0.35"/>
-                                            <stop offset="100%" stop-color="#FB7185" stop-opacity="0"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M2 21 L12 19 L22 20 L32 9 L40 12 L48 4" stroke="#FB7185" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M2 21 L12 19 L22 20 L32 9 L40 12 L48 4 L48 24 L2 24 Z" fill="url(#sparkCritical)"/>
-                                    <circle cx="48" cy="4" r="2.5" fill="#FB7185"/>
-                                </svg>
-                            </div>
                         </div>
                         <p>Critical Overflow Dispatch</p>
                     </div>
                 </div>
             </section>
 
-            <!-- ========================================================
-                 MAJOR OPERATIONS ARENA:
-                 Primary Live Campus GIS Map (Focal Point) + Critical Dispatch Alerts
-            ======================================================== -->
+            <!-- Dashboard Main Arena: Campus Schematic & Priority Alerts -->
             <div class="operations-main-arena">
                 
-                <!-- Left: Live Campus GIS Radar Map -->
+                <!-- Campus Schematic Map -->
                 <section class="arena-map-section">
                     <div class="arena-card map-arena-card">
-                        <!-- Top Map Command Bar -->
+                        <!-- Top Map Controls Bar -->
                         <div class="map-command-bar">
                             <div class="map-command-left">
-                                <div class="telemetry-grouped-badge">
-                                    <span class="radar-ping-ring"></span>
-                                    <span class="radar-ping-dot"></span>
-                                    <span class="tg-title">PRIMARY LIVE MAP</span>
-                                    <span class="tg-sep">&bull;</span>
-                                    <span class="tg-sub"><i class='bx bx-current-location'></i> Sector 04 GIS</span>
-                                </div>
-                                <span class="map-node-count-badge" id="mapNodeCountBadge"><span class="node-ping-dot"></span> Live Monitoring</span>
+                                <span class="map-title-heading">Campus Demonstration Layout</span>
+                                <span class="map-node-count-badge" id="mapNodeCountBadge"><span class="node-ping-dot"></span> Active Monitoring</span>
                             </div>
                             <div class="map-command-right">
-                                <span class="map-telemetry-tag"><i class='bx bx-crosshair'></i> 12.9716&deg; N, 77.5946&deg; E</span>
-                                <div class="map-control-group">
-                                    <span class="map-mode-pill active"><i class='bx bx-layer'></i> IoT Vector</span>
-                                    <button class="map-zoom-btn" onclick="navigateToPage('bins')" title="Inspect all bins"><i class='bx bx-fullscreen'></i> Inspect All</button>
-                                </div>
+                                <span class="map-note-text">Schematic View</span>
+                                <button class="map-zoom-btn" onclick="navigateToPage('bins')" title="Inspect all bins">
+                                    <i class='bx bx-list-ul'></i> View All Nodes
+                                </button>
                             </div>
                         </div>
 
@@ -313,28 +234,11 @@
                         <div class="map-placeholder" id="mapPlaceholder">
                             <div class="map-bg">
                                 <div class="map-grid-overlay"></div>
-                                <div class="map-radar-sweep">
-                                    <div class="radar-scope-rings">
-                                        <div class="radar-range-ring ring-1"></div>
-                                        <div class="radar-range-ring ring-2"></div>
-                                        <div class="radar-range-ring ring-3"></div>
-                                        <div class="radar-crosshair-h"></div>
-                                        <div class="radar-crosshair-v"></div>
-                                    </div>
-                                    <div class="radar-sweep-scanner">
-                                        <div class="radar-sweep-line"></div>
-                                        <div class="radar-sweep-tail"></div>
-                                    </div>
-                                </div>
-                                <div class="map-label">
-                                    <i class='bx bx-target-lock'></i> Smart Campus IoT Telemetry Grid
-                                </div>
-                                <div class="map-compass">
-                                    <span class="compass-n">N</span>
-                                    <div class="compass-dial"></div>
+                                <div class="map-watermark-label">
+                                    Campus Test Area &bull; Fixed Sensor Schematic
                                 </div>
                                 
-                                <!-- Roads -->
+                                <!-- Schematic Campus Pathways -->
                                 <div class="road road-h"></div>
                                 <div class="road road-v"></div>
                                 <div class="road road-h2"></div>
@@ -362,7 +266,7 @@
                             </div>
                         </div>
 
-                        <!-- Bottom Map Legend -->
+                        <!-- Map Legend -->
                         <div class="map-footer-controls">
                             <div class="map-legend">
                                 <span class="legend-item" id="legendItemNormal"><span class="legend-dot normal"></span> <span id="legendTextNormal">Normal (&le;40%)</span></span>
@@ -370,49 +274,32 @@
                                 <span class="legend-item" id="legendItemWarning"><span class="legend-dot warning"></span> <span id="legendTextWarning">Warning (80–89%)</span></span>
                                 <span class="legend-item" id="legendItemCritical"><span class="legend-dot critical"></span> <span id="legendTextCritical">Critical (&ge;90%)</span></span>
                             </div>
-                            <span class="map-status-footnote"><i class='bx bx-broadcast'></i> Markers live-linked to Firebase coordinates</span>
+                            <span class="map-status-footnote"><i class='bx bx-info-circle'></i> Marker positions indicate testing locations on campus.</span>
                         </div>
                     </div>
                 </section>
 
-                <!-- Right: Action-Oriented Operations Critical Alerts -->
+                <!-- Priority Action Alerts -->
                 <section class="arena-sidebar-section">
                     <div class="arena-card alerts-arena-card">
                         <div class="arena-card-header">
                             <div class="arena-title-group">
-                                <h2 class="section-title"><i class='bx bxs-bell-ring'></i> Critical Alerts</h2>
-                                <span class="section-subtitle">Bins requiring immediate priority dispatch</span>
+                                <h2 class="section-title"><i class='bx bxs-bell'></i> Collection Alerts</h2>
+                                <span class="section-subtitle">Bins requiring maintenance or scheduling</span>
                             </div>
-                            <span class="arena-tag critical" id="alertCountBadge">Active Monitor</span>
+                            <span class="arena-tag normal" id="alertCountBadge">All Nominal</span>
                         </div>
                         <div class="alerts-container" id="alertsContainer">
-                            <!-- Populated dynamically with compact actionable alert cards -->
+                            <!-- Populated dynamically by JS -->
                         </div>
                     </div>
                 </section>
             </div>
 
-
-            <!-- Compact Telemetry Overview -->
-            <section class="section compact-bins-section">
-                <div class="section-header-bar">
-                    <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bxs-grid-alt'></i> Hardware Nodes Overview</h2>
-                        <span class="section-subtitle">Real-time status of all field-deployed IoT bin sensors</span>
-                    </div>
-                    <button class="btn-ghost-sm" onclick="navigateToPage('bins')">View All Bins &rarr;</button>
-                </div>
-                <!-- Bin Cards Mini Grid -->
-                <div class="bins-grid compact-grid" id="binsGrid">
-                    <!-- Populated by JS -->
-                </div>
-            </section>
-
-
         </div>
 
         <!-- ============================================================
-             PAGE 2: BINS MANAGEMENT (DEDICATED FULL-PAGE VIEW)
+             PAGE 2: SMART BINS MANAGEMENT
         ============================================================ -->
         <div class="page" id="page-bins">
             <!-- Search & Filter Bar -->
@@ -420,7 +307,7 @@
                 <div class="search-filter-top">
                     <div class="search-box">
                         <i class='bx bx-search'></i>
-                        <input type="text" id="searchInputBins" placeholder="Search by Bin ID, location, or sensor ID...">
+                        <input type="text" id="searchInputBins" placeholder="Search by bin ID, location, or microcontroller...">
                     </div>
                     <div class="filter-buttons" id="filterButtonsBins">
                         <button class="filter-btn active" data-filter="all" id="filterBtnAll">All Bins</button>
@@ -432,7 +319,7 @@
                 </div>
                 <div class="bins-page-summary">
                     <div class="summary-count">
-                        <i class='bx bxs-package'></i> Showing <strong id="binsPageCount">0</strong> active smart bins
+                        <i class='bx bxs-package'></i> Showing <strong id="binsPageCount">0</strong> monitored smart bins
                     </div>
                     <div class="bins-page-legend">
                         <span class="legend-item"><span class="legend-dot normal"></span> Normal</span>
@@ -443,19 +330,19 @@
                 </div>
             </section>
 
-            <!-- Bin grid for this dedicated page -->
+            <!-- Bin grid -->
             <div class="bins-grid full-page-grid" id="binsGridPage"></div>
         </div>
 
         <!-- ============================================================
-             PAGE 3: ANALYTICS & TELEMETRY
+             PAGE 3: ANALYTICS & CAPACITY
         ============================================================ -->
         <div class="page" id="page-analytics">
             <section class="section">
                 <div class="section-header-bar">
                     <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bxs-bar-chart-alt-2'></i> Live Bin Fill Levels — All Monitored Nodes</h2>
-                        <span class="section-subtitle">Real-time percentage telemetry comparison from Firebase Realtime Database</span>
+                        <h2 class="section-title"><i class='bx bxs-bar-chart-alt-2'></i> Current Fill Levels — All Monitored Nodes</h2>
+                        <span class="section-subtitle">Real-time percentage telemetry reported by Firebase Realtime Database</span>
                     </div>
                 </div>
                 <div class="chart-container" id="chartContainerAnalytics"></div>
@@ -465,8 +352,8 @@
             <section class="section">
                 <div class="section-header-bar">
                     <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bxs-pie-chart-alt-2'></i> Fleet Capacity Distribution</h2>
-                        <span class="section-subtitle">Breakdown of campus bins by operational severity tier</span>
+                        <h2 class="section-title"><i class='bx bxs-pie-chart-alt-2'></i> Status Tier Breakdown</h2>
+                        <span class="section-subtitle">Count of campus bins within each operational threshold</span>
                     </div>
                 </div>
                 <div class="distribution-cards">
@@ -503,132 +390,122 @@
         </div>
 
         <!-- ============================================================
-             PAGE 4: DEDICATED AI WORKSPACE (PREDICTIVE ENGINE + AUTONOMOUS DISPATCH)
+             PAGE 4: ROUTE PLANNING & FORECAST
         ============================================================ -->
         <div class="page" id="page-ai">
             
-            <!-- AI Header Banner -->
+            <!-- Route & Forecast Header Banner -->
             <section class="ai-workspace-banner">
                 <div class="ai-banner-content">
                     <div class="ai-badge-row">
-                        <span class="ai-pill"><i class='bx bx-brain'></i> AI HUB v2.4</span>
-                        <span class="ai-pill secondary"><i class='bx bx-navigation'></i> Autonomous Logistics</span>
+                        <span class="ai-pill"><i class='bx bx-trip'></i> Route Planning</span>
+                        <span class="ai-pill secondary"><i class='bx bx-time'></i> Fill Forecast</span>
                     </div>
-                    <h2>Predictive Intelligence &amp; Autonomous Logistics</h2>
-                    <p>Designed to model campus waste accumulation velocity, forecast overflow events hours in advance, and generate priority-optimized collection dispatches.</p>
-                </div>
-                <div class="ai-banner-actions">
-                    <button class="btn-action-primary" onclick="alert('AI Engine recalibrated with live Firebase telemetry stream.')">
-                        <i class='bx bx-refresh'></i> Re-calibrate Models
-                    </button>
+                    <h2>Collection Route Planning &amp; Fill-Level Forecast</h2>
+                    <p>Rule-based collection route sequencing from the Central Depot and estimated time-to-full horizons based on current telemetry readings.</p>
                 </div>
             </section>
 
-            <!-- Dual AI Capabilities Grid -->
+            <!-- Dual Modules Grid -->
             <div class="ai-modules-grid">
                 
-                <!-- 1. AI PREDICTIVE ENGINE -->
+                <!-- 1. Fill-Level Forecast Table -->
                 <section class="ai-module-card">
                     <div class="ai-module-header">
                         <div class="aim-title-group">
                             <div class="aim-icon"><i class='bx bx-line-chart'></i></div>
                             <div>
-                                <h3>AI Predictive Engine</h3>
-                                <span class="aim-subtitle">Continuous Fill Velocity &amp; Overflow Forecasting</span>
+                                <h3>Fill-Level Forecast</h3>
+                                <span class="aim-subtitle">Rule-based urgency projection based on current fill levels and thresholds</span>
                             </div>
                         </div>
                         <span class="aim-status-badge preparing">
                             <span class="aim-pulse-dot"></span>
-                            AI ENGINE &bull; Preparing Prediction Model
+                            Live Estimate
                         </span>
                     </div>
 
                     <div class="ai-module-body">
-                        <!-- Prediction Table Container -->
+                        <!-- Table Container -->
                         <div class="ai-forecast-table-wrapper">
                             <table class="ai-forecast-table">
                                 <thead>
                                     <tr>
-                                        <th>Bin Identifier</th>
+                                        <th>Bin</th>
                                         <th>Location</th>
-                                        <th>Current Fill</th>
-                                        <th>Predicted Overflow</th>
-                                        <th>Estimated Time</th>
-                                        <th>Risk Index</th>
+                                        <th>Fill</th>
+                                        <th>Estimated Horizon</th>
+                                        <th>Window</th>
+                                        <th>Priority</th>
                                     </tr>
                                 </thead>
                                 <tbody id="aiPredictionBody">
-                                    <!-- Populated dynamically or graceful initialization state -->
+                                    <!-- Populated dynamically by JS -->
                                 </tbody>
                             </table>
                         </div>
 
-                        <!-- Elegant Pending Initialization Banner -->
+                        <!-- Telemetry Note Banner -->
                         <div class="ai-pending-state-card" id="aiPredictionPendingCard">
                             <div class="aip-icon-ring">
-                                <i class='bx bx-brain'></i>
+                                <i class='bx bx-info-circle'></i>
                             </div>
                             <div class="aip-details">
-                                <h4>AI ENGINE &bull; Preparing Prediction Model</h4>
-                                <p>Awaiting continuous multi-interval telemetry readings from Firebase Realtime Database. As ultrasonic sensor readings stream into the cloud, the neural velocity model computes rate-of-fill &Delta;V/&Delta;t to generate exact overflow timestamps.</p>
-                                <div class="aip-features-list">
-                                    <span><i class='bx bx-check-circle'></i> Ultrasonic ingestion pipeline ready</span>
-                                    <span><i class='bx bx-check-circle'></i> Regression math model calibrated</span>
-                                    <span><i class='bx bx-loader-alt bx-spin'></i> Awaiting live Firebase sync sequence</span>
-                                </div>
+                                <h4>Projections &bull; Rule-Based Estimation</h4>
+                                <p>Urgency windows are calculated by comparing current ultrasonic readings against configured operational thresholds. When sensors publish updates to Firebase, projections refresh automatically.</p>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 2. AUTONOMOUS DISPATCH OPTIMIZER (CONSOLIDATED AT ONE PLACE) -->
+                <!-- 2. Collection Route Optimizer -->
                 <section class="ai-module-card">
                     <div class="ai-module-header">
                         <div class="aim-title-group">
                             <div class="aim-icon"><i class='bx bx-navigation'></i></div>
                             <div>
-                                <h3>Autonomous Dispatch Optimizer</h3>
-                                <span class="aim-subtitle">Priority-Sequenced TSP Logistics &amp; Dynamic Fleet Routing</span>
+                                <h3>Collection Route</h3>
+                                <span class="aim-subtitle">Priority-sequenced collection route starting from Central Depot</span>
                             </div>
                         </div>
                         <span class="aim-status-badge ready">
                             <span class="aim-pulse-dot"></span>
-                            AI-OPTIMIZED COLLECTION ROUTE
+                            Priority Route
                         </span>
                     </div>
 
                     <div class="ai-module-body">
-                        <!-- Route Dispatch Header Stats -->
+                        <!-- Route Stats Bar -->
                         <div class="route-kpi-bar ai-route-kpi-bar">
                             <div class="route-kpi-item">
-                                <span class="rk-lbl">TOTAL STOPS</span>
+                                <span class="rk-lbl">Total Stops</span>
                                 <span class="rk-val" id="routeStops">0</span>
                             </div>
                             <div class="rk-sep"></div>
                             <div class="route-kpi-item">
-                                <span class="rk-lbl">CRITICAL BINS</span>
+                                <span class="rk-lbl">Critical Stops</span>
                                 <span class="rk-val critical" id="routeCritical">0</span>
                             </div>
                             <div class="rk-sep"></div>
                             <div class="route-kpi-item">
-                                <span class="rk-lbl">EST. TRAVEL TIME</span>
+                                <span class="rk-lbl">Est. Time</span>
                                 <span class="rk-val" id="routeETA">~0 min</span>
                             </div>
                             <div class="rk-sep"></div>
                             <div class="route-kpi-item">
-                                <span class="rk-lbl">EST. DISTANCE</span>
+                                <span class="rk-lbl">Est. Distance</span>
                                 <span class="rk-val" id="routeDistance">~0.0 km</span>
                             </div>
                         </div>
 
-                        <!-- Route Timeline Node Graph -->
+                        <!-- Route Timeline -->
                         <div class="route-timeline-card ai-route-card">
                             <div class="route-card-topbar">
                                 <div class="rct-left">
                                     <span class="rct-dot"></span>
-                                    <strong>AI-Sequenced Waypoint Graph</strong>
+                                    <strong>Planned Waypoint Sequence</strong>
                                 </div>
-                                <span class="rct-sub">Central Fleet Depot &bull; Bidirectional Loop</span>
+                                <span class="rct-sub">Central Depot &rarr; Waste Facility</span>
                             </div>
                             <div class="route-timeline-container full-page-route" id="routeContainerPage">
                                 <!-- Populated by JS -->
@@ -640,16 +517,15 @@
             </div>
         </div>
 
-
         <!-- ============================================================
-             PAGE 7: SETTINGS & SYSTEM CONFIGURATION
+             PAGE 5: SETTINGS & CONFIGURATION
         ============================================================ -->
         <div class="page" id="page-settings">
             <section class="section">
                 <div class="section-header-bar">
                     <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bxs-cog'></i> Platform Settings &amp; Architecture</h2>
-                        <span class="section-subtitle">System thresholds, notification rules, and hardware calibration</span>
+                        <h2 class="section-title"><i class='bx bxs-cog'></i> System Settings &amp; Configuration</h2>
+                        <span class="section-subtitle">Operational thresholds, theme preferences, and data source status</span>
                     </div>
                 </div>
 
@@ -657,12 +533,12 @@
                     <!-- Thresholds -->
                     <div class="settings-card">
                         <h3><i class='bx bxs-slider-alt'></i> Fill Level Thresholds</h3>
-                        <p class="settings-desc">Configure the ultrasonic fill level thresholds for all 4 operational tiers. Changes sync across Dashboard, Smart Bins, and Route Optimization.</p>
+                        <p class="settings-desc">Configure the percentage boundaries for each status tier. Changes apply immediately across the dashboard, smart bins list, and route planner.</p>
                         
                         <div class="settings-row">
                             <div class="settings-row-info">
                                 <label><span class="tier-indicator normal"></span> Normal threshold (Safe limit)</label>
-                                <span class="settings-sublabel">Bins up to this percentage are considered safe</span>
+                                <span class="settings-sublabel">Bins at or below this level are marked normal</span>
                             </div>
                             <div class="settings-input-group">
                                 <input type="number" id="thresholdNormal" value="40" min="1" max="99">
@@ -703,9 +579,9 @@
                             </div>
                         </div>
 
-                        <!-- Live Range Preview -->
+                        <!-- Live Range Breakdown -->
                         <div class="threshold-live-preview">
-                            <span class="preview-title"><i class='bx bx-check-circle'></i> Active Tier Classification Breakdown:</span>
+                            <span class="preview-title"><i class='bx bx-check-circle'></i> Active Tier Classification:</span>
                             <div class="threshold-preview-grid">
                                 <div class="threshold-tier-preview normal">
                                     <span class="preview-dot normal"></span>
@@ -738,41 +614,10 @@
                         </div>
                     </div>
 
-                    <!-- Notifications -->
-                    <div class="settings-card">
-                        <h3><i class='bx bxs-bell'></i> Notification Preferences</h3>
-                        <p class="settings-desc">Configure when you receive collection alerts.</p>
-                        <div class="settings-row">
-                            <label>Enable critical alerts</label>
-                            <label class="toggle">
-                                <input type="checkbox" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                        <div class="settings-row">
-                            <label>Enable warning alerts</label>
-                            <label class="toggle">
-                                <input type="checkbox" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                        <div class="settings-row">
-                            <label>Email notifications</label>
-                            <label class="toggle">
-                                <input type="checkbox">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                        <p class="route-note" style="margin-top:12px">
-                            <i class='bx bx-info-circle'></i>
-                            Email notifications integrate with Firebase Cloud Messaging.
-                        </p>
-                    </div>
-
                     <!-- Appearance -->
                     <div class="settings-card">
                         <h3><i class='bx bxs-palette'></i> Appearance</h3>
-                        <p class="settings-desc">Customize interface theme and display modes.</p>
+                        <p class="settings-desc">Select dark or light color theme for this session.</p>
                         <div class="settings-row">
                             <label>Dark Theme</label>
                             <label class="toggle">
@@ -786,50 +631,47 @@
                         </div>
                     </div>
 
-                    <!-- Data Source -->
+                    <!-- Data Source & Backend -->
                     <div class="settings-card">
                         <h3><i class='bx bxs-data'></i> Data Source &amp; Backend</h3>
-                        <p class="settings-desc">Current data source and connection status.</p>
+                        <p class="settings-desc">Live database connection and sensor node streaming status.</p>
                         <div class="settings-row">
-                            <label>Primary Backend</label>
-                            <span class="settings-value highlight">Firebase Realtime DB</span>
+                            <label>Backend Service</label>
+                            <span class="settings-value highlight">Firebase Realtime Database</span>
                         </div>
                         <div class="settings-row">
-                            <label>Sync State</label>
-                            <span class="settings-value" id="settingsSyncState">Active Listener</span>
+                            <label>Connection Status</label>
+                            <span class="settings-value" id="settingsSyncState">Connecting...</span>
                         </div>
                         <div class="settings-row">
                             <label>Sensors Online</label>
                             <span class="settings-value" id="sensorsOnline">— / —</span>
                         </div>
                         <div class="settings-row">
-                            <label>Refresh Rate</label>
-                            <div class="settings-input-group">
-                                <input type="number" value="10" min="2" max="60">
-                                <span>sec</span>
-                            </div>
+                            <label>Update Mechanism</label>
+                            <span class="settings-value">Realtime WebSocket Stream</span>
                         </div>
                     </div>
 
-                    <!-- About -->
+                    <!-- About This Project -->
                     <div class="settings-card">
-                        <h3><i class='bx bxs-info-circle'></i> About This Platform</h3>
-                        <p class="settings-desc">System information and architectural stack.</p>
+                        <h3><i class='bx bxs-info-circle'></i> About This Project</h3>
+                        <p class="settings-desc">Engineering project details and system architecture.</p>
                         <div class="settings-row">
-                            <label>Platform</label>
-                            <span class="settings-value">AI + IoT Smart Waste Platform</span>
+                            <label>System</label>
+                            <span class="settings-value">Smart Campus Waste Monitoring</span>
                         </div>
                         <div class="settings-row">
-                            <label>Telemetry Pipeline</label>
-                            <span class="settings-value">ESP32 &rarr; HC-SR04 &rarr; Firebase RTDB</span>
+                            <label>Hardware</label>
+                            <span class="settings-value">ESP32 + HC-SR04 Ultrasonic Sensors</span>
                         </div>
                         <div class="settings-row">
-                            <label>AI Subsystem</label>
-                            <span class="settings-value">Predictive Engine + TSP Route Solver</span>
+                            <label>Cloud Protocol</label>
+                            <span class="settings-value">HTTPS / WebSocket via Firebase</span>
                         </div>
                         <div class="settings-row">
-                            <label>Edition</label>
-                            <span class="settings-value">2026 Production Ready</span>
+                            <label>Route Algorithm</label>
+                            <span class="settings-value">Multi-Objective TSP Dispatch Heuristic</span>
                         </div>
                     </div>
                 </div>
@@ -838,23 +680,22 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <p>&copy; 2026 Smart Waste Management Platform &bull; Environmental Intelligence &bull; AI + IoT Smart City System</p>
+            <p>Smart Campus Waste Management &bull; Environmental IoT Project &bull; Real-Time Ultrasonic Telemetry</p>
         </footer>
     </main>
 
     <!-- ============================================================
          HARDWARE SENSOR TELEMETRY INSPECTION MODAL
-         Triggered when clicking any bin card, alert item, or route step
     ============================================================ -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="binModal">
-            <button class="modal-close" id="modalClose">&times;</button>
+            <button class="modal-close" id="modalClose" aria-label="Close modal">&times;</button>
             <div class="modal-header" id="modalHeader">
                 <div class="modal-header-icon">
                     <i class='bx bxs-package'></i>
                 </div>
                 <div class="modal-header-title">
-                    <span class="modal-pre-title">Hardware Telemetry Node</span>
+                    <span class="modal-pre-title">Sensor Node Inspector</span>
                     <h2 id="modalBinId">Bin 01</h2>
                 </div>
             </div>
@@ -877,11 +718,11 @@
                     <span class="value" id="modalStatus">—</span>
                 </div>
                 <div class="modal-detail">
-                    <span class="label"><i class='bx bx-time'></i> Last Firebase Ping</span>
+                    <span class="label"><i class='bx bx-time'></i> Last Sensor Ping</span>
                     <span class="value" id="modalLastUpdated">—</span>
                 </div>
                 <div class="modal-detail">
-                    <span class="label"><i class='bx bx-flag'></i> Logistics Priority</span>
+                    <span class="label"><i class='bx bx-flag'></i> Collection Priority</span>
                     <span class="value" id="modalPriority">—</span>
                 </div>
                 <div class="modal-detail">
@@ -890,7 +731,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-action-primary" onclick="closeModal()">Close Inspector</button>
+                <button class="btn-action-primary" onclick="closeModal()">Close</button>
             </div>
         </div>
     </div>
