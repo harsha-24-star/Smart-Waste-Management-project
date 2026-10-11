@@ -42,9 +42,9 @@
             </a>
 
             <div class="nav-section-label">Operations</div>
-            <a href="#" class="nav-link" data-page="analytics">
-                <i class='bx bxs-bar-chart-alt-2'></i>
-                <span>Analytics</span>
+            <a href="#" class="nav-link" data-page="estimates">
+                <i class='bx bx-time'></i>
+                <span>Fill-Level Estimate</span>
             </a>
             <a href="#" class="nav-link" data-page="ai">
                 <i class='bx bx-trip'></i>
@@ -283,7 +283,7 @@
                             <div class="dash-quick-dist">
                                 <div class="dall-label-row">
                                     <span class="dall-label">Capacity Distribution</span>
-                                    <button class="dash-text-link" onclick="navigateToPage('analytics')">View Analytics &rarr;</button>
+                                    <button class="dash-text-link" onclick="navigateToPage('estimates')">View Estimates &rarr;</button>
                                 </div>
                                 <div class="dash-dist-bars" id="dashMiniDistBars">
                                     <div class="mini-bar-row">
@@ -353,186 +353,144 @@
         </div>
 
         <!-- ============================================================
-             PAGE 3: ANALYTICS & CAPACITY
+             PAGE 3: FILL-LEVEL ESTIMATE (PROJECTIONS & HORIZONS)
         ============================================================ -->
-        <div class="page" id="page-analytics">
-            <section class="section">
-                <div class="section-header-bar">
-                    <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bxs-bar-chart-alt-2'></i> Current Fill Levels — All Monitored Nodes</h2>
-                        <span class="section-subtitle">Real-time percentage telemetry reported by Firebase Realtime Database</span>
+        <div class="page" id="page-estimates">
+            
+            <!-- Estimates Banner -->
+            <section class="ai-workspace-banner">
+                <div class="ai-banner-content">
+                    <div class="ai-badge-row">
+                        <span class="ai-pill"><i class='bx bx-time'></i> Predictive Horizons</span>
+                        <span class="ai-pill secondary"><i class='bx bx-chip'></i> Realtime Telemetry</span>
                     </div>
+                    <h2>Fill-Level Estimate &amp; Depletion Horizons</h2>
+                    <p>Rule-based urgency projections calculated from current ultrasonic sensor readings and configured thresholds to forecast overflow risks before dispatch.</p>
                 </div>
-                <div class="chart-container" id="chartContainerAnalytics"></div>
             </section>
 
-            <!-- Status distribution -->
-            <section class="section">
-                <div class="section-header-bar">
-                    <div class="header-bar-left">
-                        <h2 class="section-title"><i class='bx bxs-pie-chart-alt-2'></i> Status Tier Breakdown</h2>
-                        <span class="section-subtitle">Count of campus bins within each operational threshold</span>
+            <!-- Fill-Level Estimate Module -->
+            <section class="ai-module-card ai-forecast-module full-width-module">
+                <div class="ai-module-header">
+                    <div class="aim-title-group">
+                        <div class="aim-icon"><i class='bx bx-line-chart'></i></div>
+                        <div>
+                            <h3>Campus Fill Projections</h3>
+                            <span class="aim-subtitle">Rule-based urgency projection based on current fill levels and thresholds</span>
+                        </div>
                     </div>
+                    <span class="aim-status-badge preparing">
+                        <span class="aim-pulse-dot"></span>
+                        Live Estimate
+                    </span>
                 </div>
-                <div class="distribution-cards">
-                    <div class="distribution-card">
-                        <div class="dist-bar-bg">
-                            <div class="dist-bar" id="distNormal"></div>
-                        </div>
-                        <span class="dist-label" id="distLabelNormal">Normal (0–40%)</span>
-                        <strong class="dist-value" id="distNormalVal">0</strong>
+
+                <div class="ai-module-body">
+                    <!-- Table Container -->
+                    <div class="ai-forecast-table-wrapper">
+                        <table class="ai-forecast-table">
+                            <thead>
+                                <tr>
+                                    <th>Bin</th>
+                                    <th>Location</th>
+                                    <th>Fill</th>
+                                    <th>Estimated Horizon</th>
+                                    <th>Window</th>
+                                    <th>Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody id="aiPredictionBody">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="distribution-card">
-                        <div class="dist-bar-bg">
-                            <div class="dist-bar" id="distMedium"></div>
+
+                    <!-- Telemetry Note Banner -->
+                    <div class="ai-pending-state-card" id="aiPredictionPendingCard">
+                        <div class="aip-icon-ring">
+                            <i class='bx bx-info-circle'></i>
                         </div>
-                        <span class="dist-label" id="distLabelMedium">Medium (41–79%)</span>
-                        <strong class="dist-value" id="distMediumVal">0</strong>
-                    </div>
-                    <div class="distribution-card">
-                        <div class="dist-bar-bg">
-                            <div class="dist-bar" id="distWarning"></div>
+                        <div class="aip-details">
+                            <h4>Projections &bull; Rule-Based Estimation</h4>
+                            <p>Urgency windows are calculated by comparing current ultrasonic readings against configured operational thresholds. When sensors publish updates to Firebase, projections refresh automatically.</p>
                         </div>
-                        <span class="dist-label" id="distLabelWarning">Nearly Full (80–89%)</span>
-                        <strong class="dist-value" id="distWarningVal">0</strong>
-                    </div>
-                    <div class="distribution-card">
-                        <div class="dist-bar-bg">
-                            <div class="dist-bar" id="distCritical"></div>
-                        </div>
-                        <span class="dist-label" id="distLabelCritical">Critical (&ge;90%)</span>
-                        <strong class="dist-value" id="distCriticalVal">0</strong>
                     </div>
                 </div>
             </section>
         </div>
 
         <!-- ============================================================
-             PAGE 4: COLLECTION ROUTE & ESTIMATES
+             PAGE 4: COLLECTION ROUTE PLANNING
         ============================================================ -->
         <div class="page" id="page-ai">
             
-            <!-- Route & Forecast Header Banner -->
+            <!-- Route Header Banner -->
             <section class="ai-workspace-banner">
                 <div class="ai-banner-content">
                     <div class="ai-badge-row">
-                        <span class="ai-pill"><i class='bx bx-trip'></i> Collection Route</span>
-                        <span class="ai-pill secondary"><i class='bx bx-time'></i> Fill-Level Estimate</span>
+                        <span class="ai-pill"><i class='bx bx-trip'></i> Dynamic Dispatch</span>
+                        <span class="ai-pill secondary"><i class='bx bx-navigation'></i> Multi-Stop Route</span>
                     </div>
-                    <h2>Collection Route Planning &amp; Fill-Level Estimate</h2>
-                    <p>Rule-based collection route sequencing from the Central Depot and estimated time-to-full horizons based on current telemetry readings.</p>
+                    <h2>Collection Route Optimization</h2>
+                    <p>Priority-sequenced collection route departing from Central Fleet Depot, servicing all bins above collection threshold, and concluding at Central Waste Facility.</p>
                 </div>
             </section>
 
-            <!-- Dual Modules Grid -->
-            <div class="ai-modules-grid">
-                
-                <!-- 1. Fill-Level Estimate Table -->
-                <section class="ai-module-card ai-forecast-module">
-                    <div class="ai-module-header">
-                        <div class="aim-title-group">
-                            <div class="aim-icon"><i class='bx bx-line-chart'></i></div>
-                            <div>
-                                <h3>Fill-Level Estimate</h3>
-                                <span class="aim-subtitle">Rule-based urgency projection based on current fill levels and thresholds</span>
-                            </div>
-                        </div>
-                        <span class="aim-status-badge preparing">
-                            <span class="aim-pulse-dot"></span>
-                            Live Estimate
-                        </span>
-                    </div>
-
-                    <div class="ai-module-body">
-                        <!-- Table Container -->
-                        <div class="ai-forecast-table-wrapper">
-                            <table class="ai-forecast-table">
-                                <thead>
-                                    <tr>
-                                        <th>Bin</th>
-                                        <th>Location</th>
-                                        <th>Fill</th>
-                                        <th>Estimated Horizon</th>
-                                        <th>Window</th>
-                                        <th>Priority</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="aiPredictionBody">
-                                    <!-- Populated dynamically by JS -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Telemetry Note Banner -->
-                        <div class="ai-pending-state-card" id="aiPredictionPendingCard">
-                            <div class="aip-icon-ring">
-                                <i class='bx bx-info-circle'></i>
-                            </div>
-                            <div class="aip-details">
-                                <h4>Projections &bull; Rule-Based Estimation</h4>
-                                <p>Urgency windows are calculated by comparing current ultrasonic readings against configured operational thresholds. When sensors publish updates to Firebase, projections refresh automatically.</p>
-                            </div>
+            <!-- Collection Route Module -->
+            <section class="ai-module-card ai-route-module full-width-module">
+                <div class="ai-module-header">
+                    <div class="aim-title-group">
+                        <div class="aim-icon"><i class='bx bx-navigation'></i></div>
+                        <div>
+                            <h3>Collection Route</h3>
+                            <span class="aim-subtitle">Priority-sequenced collection route starting from Central Depot</span>
                         </div>
                     </div>
-                </section>
+                    <span class="aim-status-badge ready">
+                        <span class="aim-pulse-dot"></span>
+                        Priority Route
+                    </span>
+                </div>
 
-                <!-- 2. Collection Route Optimizer -->
-                <section class="ai-module-card ai-route-module">
-                    <div class="ai-module-header">
-                        <div class="aim-title-group">
-                            <div class="aim-icon"><i class='bx bx-navigation'></i></div>
-                            <div>
-                                <h3>Collection Route</h3>
-                                <span class="aim-subtitle">Priority-sequenced collection route starting from Central Depot</span>
-                            </div>
+                <div class="ai-module-body">
+                    <!-- Route Stats Bar -->
+                    <div class="route-kpi-bar ai-route-kpi-bar">
+                        <div class="route-kpi-item">
+                            <span class="rk-lbl">Total Stops</span>
+                            <span class="rk-val" id="routeStops">—</span>
                         </div>
-                        <span class="aim-status-badge ready">
-                            <span class="aim-pulse-dot"></span>
-                            Priority Route
-                        </span>
-                    </div>
-
-                    <div class="ai-module-body">
-                        <!-- Route Stats Bar -->
-                        <div class="route-kpi-bar ai-route-kpi-bar">
-                            <div class="route-kpi-item">
-                                <span class="rk-lbl">Total Stops</span>
-                                <span class="rk-val" id="routeStops">—</span>
-                            </div>
-                            <div class="rk-sep"></div>
-                            <div class="route-kpi-item">
-                                <span class="rk-lbl">Critical Stops</span>
-                                <span class="rk-val critical" id="routeCritical">—</span>
-                            </div>
-                            <div class="rk-sep"></div>
-                            <div class="route-kpi-item">
-                                <span class="rk-lbl">Est. Time</span>
-                                <span class="rk-val" id="routeETA">—</span>
-                            </div>
-                            <div class="rk-sep"></div>
-                            <div class="route-kpi-item">
-                                <span class="rk-lbl">Est. Distance</span>
-                                <span class="rk-val" id="routeDistance">—</span>
-                            </div>
+                        <div class="rk-sep"></div>
+                        <div class="route-kpi-item">
+                            <span class="rk-lbl">Critical Stops</span>
+                            <span class="rk-val critical" id="routeCritical">—</span>
                         </div>
-
-                        <!-- Route Timeline -->
-                        <div class="route-timeline-card ai-route-card">
-                            <div class="route-card-topbar">
-                                <div class="rct-left">
-                                    <span class="rct-dot"></span>
-                                    <strong>Planned Waypoint Sequence</strong>
-                                </div>
-                                <span class="rct-sub">Central Depot &rarr; Waste Facility</span>
-                            </div>
-                            <div class="route-timeline-container full-page-route" id="routeContainerPage">
-                                <!-- Populated by JS -->
-                            </div>
+                        <div class="rk-sep"></div>
+                        <div class="route-kpi-item">
+                            <span class="rk-lbl">Est. Time</span>
+                            <span class="rk-val" id="routeETA">—</span>
+                        </div>
+                        <div class="rk-sep"></div>
+                        <div class="route-kpi-item">
+                            <span class="rk-lbl">Est. Distance</span>
+                            <span class="rk-val" id="routeDistance">—</span>
                         </div>
                     </div>
-                </section>
 
-            </div>
+                    <!-- Route Timeline -->
+                    <div class="route-timeline-card ai-route-card">
+                        <div class="route-card-topbar">
+                            <div class="rct-left">
+                                <span class="rct-dot"></span>
+                                <strong>Planned Waypoint Sequence</strong>
+                            </div>
+                            <span class="rct-sub">Central Depot &rarr; Waste Facility</span>
+                        </div>
+                        <div class="route-timeline-container full-page-route" id="routeContainerPage">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <!-- ============================================================

@@ -165,8 +165,10 @@ setInterval(updateESP32Status, 2000);
 const pageTitles = {
     dashboard: { title: "Overview", subtitle: "Monitor bin levels and collection needs." },
     bins:      { title: "Bin Monitoring", subtitle: "Individual node telemetry, fill levels, and sensor health." },
-    analytics: { title: "Analytics", subtitle: "Fill-level distribution and campus capacity breakdown." },
-    ai:        { title: "Collection Route", subtitle: "Rule-based collection route sequencing and horizon projections." },
+    estimates: { title: "Fill-Level Estimate", subtitle: "Rule-based predictive depletion horizons and overflow forecasts." },
+    analytics: { title: "Fill-Level Estimate", subtitle: "Rule-based predictive depletion horizons and overflow forecasts." },
+    ai:        { title: "Collection Route", subtitle: "Priority-sequenced collection route departing from Central Fleet Depot." },
+    route:     { title: "Collection Route", subtitle: "Priority-sequenced collection route departing from Central Fleet Depot." },
     settings:  { title: "Settings", subtitle: "System thresholds, theme preferences, and telemetry status." },
 };
 
@@ -1112,94 +1114,64 @@ function renderChartIn(containerId) {
 }
 
 /**
- * renderAIPage — Renders the Fill-Level Estimate and Route Planning workspace.
+ * renderEstimatesPage — Renders the Fill-Level Estimate table and projections.
  */
-function renderAIPage() {
+function renderEstimatesPage() {
     const tbody = document.getElementById('aiPredictionBody');
-    if (tbody) {
-        if (bins.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="table-empty">Awaiting live sensor readings from Firebase to generate fill projections.</td>
-                </tr>
-            `;
-        } else {
-            tbody.innerHTML = bins.map(bin => {
-                const status = getBinStatus(bin.fillLevel);
-                const binNum = bin.id.replace("BIN-", "");
-                const fill = Number(bin.fillLevel) || 0;
+    if (!tbody) return;
 
-                let overflowEstimate = "—";
-                let estTime = "—";
-                if (fill >= thresholds.critical) {
-                    overflowEstimate = "Immediate (At Limit)";
-                    estTime = "< 1 hour";
-                } else if (fill >= thresholds.warning) {
-                    overflowEstimate = "Today (Evening)";
-                    estTime = "~3 - 4 hours";
-                } else if (fill >= thresholds.medium || fill > thresholds.normal) {
-                    overflowEstimate = "Tomorrow (Morning)";
-                    estTime = "~14 - 18 hours";
-                } else {
-                    overflowEstimate = "Nominal (> 36h)";
-                    estTime = "> 36 hours";
-                }
-
-                return `
-                    <tr>
-                        <td><strong>Bin ${binNum}</strong> <span class="dim">(${bin.id})</span></td>
-                        <td>${bin.location}</td>
-                        <td><span class="table-pct ${status.className}">${fill}%</span></td>
-                        <td><span class="ai-forecast-badge ${status.className}">${overflowEstimate}</span></td>
-                        <td>${estTime}</td>
-                        <td><span class="risk-badge ${status.className}">${status.risk}</span></td>
-                    </tr>
-                `;
-            }).join('');
-        }
+    if (bins.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="table-empty">Awaiting live sensor readings from Firebase to generate fill projections.</td>
+            </tr>
+        `;
+        return;
     }
 
-    renderRoutePage();
+    tbody.innerHTML = bins.map(bin => {
+        const status = getBinStatus(bin.fillLevel);
+        const binNum = bin.id.replace("BIN-", "");
+        const fill = Number(bin.fillLevel) || 0;
+
+        let overflowEstimate = "—";
+        let estTime = "—";
+        if (fill >= thresholds.critical) {
+            overflowEstimate = "Immediate (At Limit)";
+            estTime = "< 1 hour";
+        } else if (fill >= thresholds.warning) {
+            overflowEstimate = "Today (Evening)";
+            estTime = "~3 - 4 hours";
+        } else if (fill >= thresholds.medium || fill > thresholds.normal) {
+            overflowEstimate = "Tomorrow (Morning)";
+            estTime = "~14 - 18 hours";
+        } else {
+            overflowEstimate = "Nominal (> 36h)";
+            estTime = "> 36 hours";
+        }
+
+        return `
+            <tr onclick="showBinDetails('${bin.id}')" title="Inspect node ${bin.id}" style="cursor: pointer;">
+                <td><strong>Bin ${binNum}</strong> <span class="dim">(${bin.id})</span></td>
+                <td>${bin.location}</td>
+                <td><span class="table-pct ${status.className}">${fill}%</span></td>
+                <td><span class="ai-forecast-badge ${status.className}">${overflowEstimate}</span></td>
+                <td>${estTime}</td>
+                <td><span class="risk-badge ${status.className}">${status.risk}</span></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderAnalyticsPage() {
+    renderEstimatesPage();
 }
 
 /**
- * renderAnalyticsPage — Analytics workspace with distribution breakdown.
+ * renderAIPage — Dedicated renderer for the Collection Route workspace.
  */
-function renderAnalyticsPage() {
-    renderChartIn('chartContainerAnalytics');
-
-    let normal = 0, medium = 0, warning = 0, critical = 0;
-    bins.forEach(bin => {
-        const status = getBinStatus(bin.fillLevel);
-        switch (status.className) {
-            case "normal":   normal++;   break;
-            case "medium":   medium++;   break;
-            case "warning":  warning++;  break;
-            case "critical": critical++; break;
-        }
-    });
-
-    const total = bins.length || 1;
-
-    const dNormal = document.getElementById('distNormal');
-    const dMedium = document.getElementById('distMedium');
-    const dWarning = document.getElementById('distWarning');
-    const dCritical = document.getElementById('distCritical');
-
-    if (dNormal) dNormal.style.height = `${(normal / total) * 100}%`;
-    if (dMedium) dMedium.style.height = `${(medium / total) * 100}%`;
-    if (dWarning) dWarning.style.height = `${(warning / total) * 100}%`;
-    if (dCritical) dCritical.style.height = `${(critical / total) * 100}%`;
-
-    const dNormalVal = document.getElementById('distNormalVal');
-    const dMediumVal = document.getElementById('distMediumVal');
-    const dWarningVal = document.getElementById('distWarningVal');
-    const dCriticalVal = document.getElementById('distCriticalVal');
-
-    if (dNormalVal) dNormalVal.textContent = normal;
-    if (dMediumVal) dMediumVal.textContent = medium;
-    if (dWarningVal) dWarningVal.textContent = warning;
-    if (dCriticalVal) dCriticalVal.textContent = critical;
+function renderAIPage() {
+    renderRoutePage();
 }
 
 /**
@@ -1253,6 +1225,7 @@ let currentPage = 'dashboard';
 
 function navigateToPage(pageName) {
     if (pageName === 'route') pageName = 'ai';
+    if (pageName === 'analytics') pageName = 'estimates';
 
     // Update header title and subtitle based on current workspace
     const headingEl = document.getElementById('pageTitleHeading');
@@ -1273,7 +1246,7 @@ function navigateToPage(pageName) {
 
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
-        if (link.dataset.page === pageName) {
+        if (link.dataset.page === pageName || (pageName === 'estimates' && link.dataset.page === 'analytics')) {
             link.classList.add('active');
         }
     });
@@ -1282,8 +1255,9 @@ function navigateToPage(pageName) {
         case 'bins':
             renderBinsPage(bins);
             break;
+        case 'estimates':
         case 'analytics':
-            renderAnalyticsPage();
+            renderEstimatesPage();
             break;
         case 'ai':
         case 'route':
