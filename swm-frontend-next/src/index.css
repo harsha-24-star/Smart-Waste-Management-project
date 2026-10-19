@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --page-bg: #F7F8F5;
+    --surface: #FFFFFF;
+    --surface-muted: #F0F2ED;
+    --surface-hover: #E8ECE5;
+    --border: #E3E8E1;
+    --border-strong: #CDD3C7;
+
+    --text-primary: #202923;
+    --text-secondary: #5F6962;
+    --text-muted: #848F87;
+
+    --primary: #245C43;
+    --primary-hover: #1D4B36;
+    --accent: #E7EFE8;
+    --accent-hover: #DCE8DE;
+
+    --status-normal: #245C43;
+    --status-normal-bg: #E7EFE8;
+    --status-normal-border: #CBDDCF;
+
+    --status-medium: #2F5C78;
+    --status-medium-bg: #EAF2F7;
+    --status-medium-border: #C6DDEB;
+
+    --status-warning: #8F6B2A;
+    --status-warning-bg: #FAF3E7;
+    --status-warning-border: #EEDCC0;
+
+    --status-critical: #9E3E37;
+    --status-critical-bg: #FAECEB;
+    --status-critical-border: #ECCDCB;
+  }
+
+  .dark {
+    --page-bg: #000000;
+    --sidebar-bg: #000000;
+    --header-bg: #000000;
+    --surface: #080808;
+    --surface-muted: #050505;
+    --surface-hover: #0A0A0A;
+    --border: #202020;
+    --border-strong: #282828;
+
+    --text-primary: #F5F5F5;
+    --text-secondary: #B3B3B3;
+    --text-muted: #858585;
+
+    --primary: #86B99A;
+    --primary-hover: #9BC7AD;
+    --accent: #0E1612;
+    --accent-hover: #15221B;
+
+    --status-normal: #86B99A;
+    --status-normal-bg: #0E1A13;
+    --status-normal-border: #172D20;
+
+    --status-medium: #7FA8C4;
+    --status-medium-bg: #0E161F;
+    --status-medium-border: #162635;
+
+    --status-warning: #D4AF67;
+    --status-warning-bg: #1C1508;
+    --status-warning-border: #2E230E;
+
+    --status-critical: #D9736C;
+    --status-critical-bg: #1F0D0D;
+    --status-critical-border: #331616;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--page-bg);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  .dark body {
+    background-color: #000000;
+    color: #F5F5F5;
+  }
+
+  .dark aside {
+    background-color: #000000 !important;
+    border-color: #202020 !important;
+  }
+
+  .dark header {
+    background-color: #000000 !important;
+    border-color: #202020 !important;
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum" 1, "zero" 1;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes border-beam {
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+.animate-border-beam {
+  animation: border-beam 8s infinite linear;
+}
+
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(36, 92, 67, 0.4);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(36, 92, 67, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(36, 92, 67, 0);
+  }
+}
+
+.animate-radar {
+  animation: radar-pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+/* Aceternity UI Shimmer Button Perimeter Highlight Animation */
+@keyframes shimmer-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-shimmer-spin {
+  animation: shimmer-spin 3s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer-spin {
+    animation: none !important;
+    display: none !important;
+  }
+}
+
+/* Aceternity UI Background Dots (Pure CSS radial-gradient: 24px spacing, 1px dot, clearly visible on #000000) */
+@utility bg-dot-grid {
+  background-image: none;
+}
+
+@utility bg-dot-grid-subtle {
+  background-image: none;
+}
+
+.dark .bg-dot-grid,
+.dark:where(.dark, .dark *) .bg-dot-grid {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.22) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+}
+
+.dark .bg-dot-grid-subtle,
+.dark:where(.dark, .dark *) .bg-dot-grid-subtle {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+}
+
